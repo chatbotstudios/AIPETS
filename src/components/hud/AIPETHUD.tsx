@@ -1147,98 +1147,112 @@ Instructions:
   }
 
   return (
-    <div id="main-app-container" className="max-w-6xl mx-auto z-10 relative transition-all duration-700 w-full">
-      <header className="text-center mb-8 relative flex flex-col items-center">
-        <div className="flex items-center gap-1.5 justify-center">
-          <h1 className="text-5xl font-black hud-title tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-[#00F2FE] via-[#9B51E0] to-[#FF3366] inline-block drop-shadow-[0_0_15px_rgba(0,242,254,0.5)]">
-            AIPETS
-          </h1>
-          <span className="text-slate-500 font-mono text-xs tracking-[0.2em] font-semibold mt-4 ml-1">SWARM_OVERSEER_V2.0</span>
+    <div id="main-app-container" className="max-w-6xl mx-auto z-10 relative transition-all duration-700 w-full pb-12">
+      {/* High Fidelity Glowing background spots */}
+      <div className="glow-spot-left"></div>
+      <div className="glow-spot-right"></div>
+
+      {/* TOP NAVBAR CONTAINER */}
+      <header className="top-navbar w-full px-6 py-4 rounded-2xl flex items-center justify-between mb-8 z-20 relative">
+        <div className="flex items-center gap-3">
+          {/* Glowing Mascot Logo */}
+          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#00F2FE] to-[#9B51E0] flex items-center justify-center p-0.5 shadow-[0_0_15px_rgba(0,242,254,0.4)] animate-pulse">
+            <div className="w-full h-full bg-[#05060b] rounded-full flex items-center justify-center text-sm">
+              👾
+            </div>
+          </div>
+          <div className="flex flex-col">
+            <h1 className="text-base font-black tracking-widest text-white font-orbitron drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">
+              AIPETS Swarm Overseer HUD
+            </h1>
+            <span className="text-[9px] font-mono text-[#00F2FE] tracking-[0.15em] font-semibold uppercase opacity-80">
+              CONNECTED TO SWARM MESH • TELEMETRY ACTIVE
+            </span>
+          </div>
         </div>
-        <p className="text-cyan-400 font-mono mt-2 text-xs uppercase tracking-widest opacity-80 animate-pulse">
-          Connected to Swarm Mesh &gt; Telemetry Active
-        </p>
 
-        {/* Header Action Badges */}
-        <div className="md:absolute md:top-0 md:right-0 flex flex-wrap items-center gap-2 mt-4 md:mt-0 justify-center">
-          <button
-            onClick={() => {
-              audioSynth.playBeep(550, 0.1);
-              setShowWizard(true);
-            }}
-            className="text-[10px] text-cyan-400 hover:text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/10 px-3 py-1.5 rounded uppercase tracking-widest font-mono transition-all cursor-pointer"
-          >
-            🔮 Setup Wizard
-          </button>
-
-          <button
-            onClick={handleOpenSettings}
-            className="text-[10px] text-purple-400 hover:text-purple-300 border border-purple-500/30 hover:bg-purple-500/10 px-3 py-1.5 rounded uppercase tracking-widest font-mono transition-all cursor-pointer"
-          >
-            ⚙️ Settings
-          </button>
-          
+        {/* Hamburger / Action menu */}
+        <div className="flex items-center gap-3">
           <span
-            className={`font-mono text-[9px] uppercase tracking-widest font-bold border px-3 py-1.5 rounded transition-all duration-300 ${
+            className={`hidden md:inline-block font-mono text-[9px] uppercase tracking-widest font-bold border px-3 py-1.5 rounded-lg transition-all duration-300 ${
               store.emitterActive 
                 ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.2)]'
                 : 'border-rose-500/30 bg-rose-500/10 text-rose-400'
             }`}
           >
-            Proxy Downlink: {store.emitterActive ? 'Online' : 'Offline'}
+            PROXY: {store.emitterActive ? 'ONLINE' : 'OFFLINE'}
           </span>
-          
+
           <button
-            onClick={() => {
-              if(confirm("Confirm hard wipe of companion NVS state?")) {
-                store.nukeState();
-                audioSynth.playErrorWarning();
-              }
-            }}
-            className="text-[10px] text-rose-500/70 hover:text-rose-400 border border-rose-500/30 hover:bg-rose-500/10 px-3 py-1.5 rounded uppercase tracking-widest font-mono transition-all cursor-pointer"
+            onClick={handleOpenSettings}
+            className="w-10 h-10 rounded-xl bg-slate-800/40 hover:bg-slate-800/80 border border-slate-700/50 flex items-center justify-center text-slate-300 hover:text-white transition-all cursor-pointer shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]"
+            title="Configure HUD"
           >
-            Reset State
+            <svg className="w-5 h-5 animate-[spin_8s_linear_infinite]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
           </button>
         </div>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      {/* TWO COLUMN GRID MAIN */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10">
         
-        {/* LEFT COLUMN: MAIN GLASSMORPHIC HUD (7 Cols) */}
-        <main className="lg:col-span-7 flex flex-col gap-6 w-full">
+        {/* LEFT COLUMN: MAIN VIEWPORT (lg:col-span-8) */}
+        <main className="lg:col-span-8 flex flex-col gap-6 w-full">
           
-          {/* HUD VIEWPORT PANEL */}
-          <div className={`glassmorphic glassmorphic-hud p-6 flex flex-col gap-4 border-state-${store.hudState}`}>
+          <div className="premium-pane p-6 flex flex-col gap-4">
             
-            {/* ROW 1: Identity */}
+            {/* Node Identity header */}
             <div className="flex justify-between items-center border-b border-slate-800/80 pb-3">
-              <span className="text-xs uppercase tracking-widest font-mono text-[#00F2FE] font-bold">Node Identity</span>
-              <span className="font-mono font-bold text-sm tracking-wider text-slate-300">
-                {currentPet ? `${currentPet.name} (${currentPet.uuid})` : 'CLAW-LOADING'}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#00F2FE] animate-pulse"></span>
+                <span className="text-xs uppercase tracking-widest font-mono text-slate-400 font-bold">
+                  Node Identity:
+                </span>
+                <span className="font-mono font-bold text-sm tracking-wider text-white">
+                  {currentPet ? `${currentPet.name} (${currentPet.uuid})` : 'CLAW-LOADING'}
+                </span>
+              </div>
+              
+              <button 
+                onClick={handleOpenSettings}
+                className="text-slate-500 hover:text-slate-300 transition-colors p-1"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                </svg>
+              </button>
             </div>
 
-            {/* SCREEN AREA VIEWPORT — Expanded Braille Matrix */}
-            <div className={`screen-area h-96 flex flex-col justify-center items-center relative py-4 select-none braille-screen-${store.hudState}`}>
+            {/* SCREEN VIEWPORT — Enhanced LED Matrix Screen */}
+            <div className="screen-area led-matrix-bg h-96 flex flex-col justify-center items-center relative py-4 select-none braille-screen-thinking">
               <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none opacity-40" />
               <canvas ref={brailleCanvasRef} className="absolute inset-0 w-full h-full pointer-events-none opacity-20" />
 
-              {/* 5-row Braille Matrix */}
-              <div ref={screenRow0Ref} className="unicode-wave-row font-bold select-none">░░░░░░░░</div>
-              <div ref={screenRow1Ref} className="unicode-wave-row font-bold select-none">░░░░░░░░</div>
-              <div ref={screenRow2Ref} className="unicode-wave-row font-bold select-none">░░░░░░░░</div>
-              <div ref={screenRow3Ref} className="unicode-wave-row font-bold select-none">░░░░░░░░</div>
-              <div ref={screenRow4Ref} className="unicode-wave-row font-bold select-none">░░░░░░░░</div>
-
-              {/* Status overlays */}
-              <div className="absolute top-3 left-4 text-xs font-mono text-cyan-400 bg-black/60 px-2.5 py-0.5 rounded border border-cyan-500/20 select-none">
-                STATE: {store.isNapping ? 'SLEEPING' : store.hudState.toUpperCase()}
+              {/* Massive Center Glowing Kawaii Face */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-10">
+                <span className="text-5xl md:text-6xl font-black font-mono tracking-widest text-[#FF3366] text-center drop-shadow-[0_0_20px_rgba(255,51,102,0.85)] select-none animate-pulse">
+                  {store.kaomoji}
+                </span>
               </div>
 
-              {/* Pulse Source Badge */}
+              {/* 5-row Braille Matrix (Falling background streams) */}
+              <div ref={screenRow0Ref} className="unicode-wave-row font-bold select-none text-purple-600/25">░░░░░░░░</div>
+              <div ref={screenRow1Ref} className="unicode-wave-row font-bold select-none text-purple-600/25">░░░░░░░░</div>
+              <div ref={screenRow2Ref} className="unicode-wave-row font-bold select-none text-purple-600/25">░░░░░░░░</div>
+              <div ref={screenRow3Ref} className="unicode-wave-row font-bold select-none text-purple-600/25">░░░░░░░░</div>
+              <div ref={screenRow4Ref} className="unicode-wave-row font-bold select-none text-purple-600/25">░░░░░░░░</div>
+
+              {/* Overlay HUD Tags */}
+              <div className="absolute top-3 left-4 text-[9px] font-mono font-bold text-cyan-400 bg-black/75 px-2.5 py-1 rounded-lg border border-cyan-500/20 select-none tracking-widest">
+                SYSTEM_STATE: {store.isNapping ? 'SLEEPING' : store.hudState.toUpperCase()}
+              </div>
+
               {store.pulseSource && (Date.now() - store.lastPulseTime < 15000) && (
                 <div
-                  className="absolute top-3 right-4 text-[9px] font-mono font-bold uppercase tracking-widest px-2.5 py-1 rounded border select-none pulse-source-badge"
+                  className="absolute top-3 right-4 text-[9px] font-mono font-bold uppercase tracking-widest px-2.5 py-1 rounded-lg border select-none pulse-source-badge"
                   style={{
                     backgroundColor: (SOURCE_COLORS[store.pulseSource] || SOURCE_COLORS.cyberspace).bg,
                     color: (SOURCE_COLORS[store.pulseSource] || SOURCE_COLORS.cyberspace).text,
@@ -1249,85 +1263,85 @@ Instructions:
                   {(SOURCE_COLORS[store.pulseSource] || SOURCE_COLORS.cyberspace).label}
                 </div>
               )}
-
-              <div className="absolute bottom-3 right-4 text-sm font-mono text-slate-400 bg-black/60 px-2.5 py-0.5 rounded select-none">
-                {store.kaomoji}
-              </div>
             </div>
 
-            {/* ROW 2: Agent Thought Ticker */}
-            <div className="ticker-container px-4 py-2 border border-slate-800/50 flex flex-col gap-0.5">
-              <span className="text-[10px] uppercase font-mono tracking-widest text-[#9B51E0] font-bold">Agent Thought</span>
-              <div className="text-xs md:text-sm text-slate-300 font-mono italic whitespace-nowrap overflow-hidden text-ellipsis">
+            {/* Bubble 1: Agent Thought */}
+            <div className="bubble-purple rounded-2xl px-5 py-3.5 flex flex-col gap-1">
+              <span className="text-[10px] uppercase font-mono tracking-widest text-[#c084fc] font-bold">
+                Agent Thought:
+              </span>
+              <div className="text-xs md:text-sm text-slate-300 font-mono italic leading-relaxed">
                 {store.thoughtTicker}
               </div>
             </div>
 
-            {/* ROW 3: Active Tools Ticker */}
-            <div className="ticker-container px-4 py-2 border border-slate-800/50 flex flex-col gap-0.5">
-              <span className="text-[10px] uppercase font-mono tracking-widest text-[#FFD200] font-bold">Active Tools</span>
-              <div className="text-xs md:text-sm text-yellow-500 font-mono tracking-wide whitespace-nowrap overflow-hidden text-ellipsis">
+            {/* Bubble 2: Active Tools */}
+            <div className="bubble-yellow rounded-2xl px-5 py-3.5 flex flex-col gap-1">
+              <span className="text-[10px] uppercase font-mono tracking-widest text-[#FFD200] font-bold">
+                Active Tools:
+              </span>
+              <div className="text-xs md:text-sm text-yellow-500 font-mono tracking-wider font-semibold">
                 {store.toolsTicker}
               </div>
             </div>
 
-            {/* VITALS METRICS GRID */}
+            {/* VITALS PROGRESS METRICS GRID */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-2">
               
-              {/* LEVEL/CLASS */}
-              <div className="bg-black/40 border border-slate-800/60 rounded-xl p-3.5 text-center flex flex-col justify-center">
-                <span className="text-[10px] font-mono uppercase tracking-widest text-slate-500">Tier Level</span>
-                <span className="text-2xl font-black text-slate-200 mt-1 font-mono">{currentPet?.level ?? 1}</span>
-                <span className="text-[9px] font-mono uppercase tracking-wide text-[#00F2FE] font-bold mt-1">
-                  {currentPet?.currentClass ?? 'Cyber-Egg'}
+              {/* Level Card */}
+              <div className="vitals-card rounded-2xl p-4 text-center flex flex-col justify-center items-center">
+                <span className="text-[9px] font-mono uppercase tracking-widest text-slate-500 font-bold">Tier Level</span>
+                <span className="text-3xl font-black text-white mt-1.5 font-mono leading-none">{currentPet?.level ?? 12}</span>
+                <span className="text-[9px] font-mono uppercase tracking-wider text-[#00F2FE] font-bold mt-2">
+                  {currentPet?.currentClass ?? 'Ghost-Protocol'}
                 </span>
               </div>
 
-              {/* XP progress bar */}
-              <div className="bg-black/40 border border-slate-800/60 rounded-xl p-3.5 flex flex-col justify-between">
-                <div className="flex justify-between items-center text-[10px] font-mono uppercase tracking-widest text-slate-500">
+              {/* XP Progress Card */}
+              <div className="vitals-card rounded-2xl p-4 flex flex-col justify-between">
+                <div className="flex justify-between items-center text-[9px] font-mono uppercase tracking-widest text-slate-500 font-bold">
                   <span>XP Progress</span>
-                  <span className="font-bold text-slate-300 font-mono">{(currentPet?.xp ?? 0) % 1000}</span>
+                  <span className="font-bold text-cyan-400 font-mono">{(currentPet?.xp ?? 720)}/1000</span>
                 </div>
-                <div className="w-full bg-slate-800 rounded-full h-2 mt-2 overflow-hidden shadow-[inset_0_0_5px_rgba(0,0,0,0.8)]">
+                <div className="w-full bg-slate-900 rounded-full h-1.5 mt-3 overflow-hidden">
                   <div
-                    className="bg-cyan-400 h-full transition-all duration-300 progress-stripes shadow-[0_0_10px_var(--cyan-neon)]"
-                    style={{ width: `${((currentPet?.xp ?? 0) % 1000) / 10}%` }}
+                    className="progress-bar-flat-cyan h-full transition-all duration-300 progress-stripes"
+                    style={{ width: `${((currentPet?.xp ?? 720) % 1000) / 10}%` }}
                   />
                 </div>
-                <span className="text-[9px] font-mono text-slate-500 mt-1">Next: 1,000 XP</span>
+                <span className="text-[9px] font-mono text-slate-500 mt-2">Telemetry Synced</span>
               </div>
 
-              {/* HP metabolic energy */}
-              <div className="bg-black/40 border border-slate-800/60 rounded-xl p-3.5 flex flex-col justify-between">
-                <div className="flex justify-between items-center text-[10px] font-mono uppercase tracking-widest text-slate-500">
+              {/* HP Card */}
+              <div className="vitals-card rounded-2xl p-4 flex flex-col justify-between">
+                <div className="flex justify-between items-center text-[9px] font-mono uppercase tracking-widest text-slate-500 font-bold">
                   <span>Energy HP</span>
-                  <span className={`font-mono font-bold ${hpColorClass}`}>{healthPercent}%</span>
+                  <span className="font-mono font-bold text-emerald-400">{healthPercent}%</span>
                 </div>
-                <div className="w-full bg-slate-800 rounded-full h-2 mt-2 overflow-hidden shadow-[inset_0_0_5px_rgba(0,0,0,0.8)]">
+                <div className="w-full bg-slate-900 rounded-full h-1.5 mt-3 overflow-hidden">
                   <div
-                    className={`h-full transition-all duration-300 progress-stripes shadow-[0_0_10px_currentColor] ${hpBarColorClass}`}
+                    className="progress-bar-flat-green h-full transition-all duration-300 progress-stripes"
                     style={{ width: `${healthPercent}%` }}
                   />
                 </div>
-                <span className="text-[9px] font-mono text-slate-500 mt-1">
+                <span className="text-[9px] font-mono text-slate-500 mt-2">
                   Status: {store.isNapping ? 'Napping' : 'Active'}
                 </span>
               </div>
 
-              {/* REP trust rating */}
-              <div className="bg-black/40 border border-slate-800/60 rounded-xl p-3.5 flex flex-col justify-between">
-                <div className="flex justify-between items-center text-[10px] font-mono uppercase tracking-widest text-slate-500">
+              {/* REP Card */}
+              <div className="vitals-card rounded-2xl p-4 flex flex-col justify-between">
+                <div className="flex justify-between items-center text-[9px] font-mono uppercase tracking-widest text-slate-500 font-bold">
                   <span>Trust REP</span>
-                  <span className="font-bold text-indigo-400 font-mono">{currentRep.toFixed(3)}</span>
+                  <span className="font-bold text-blue-400 font-mono">{currentRep.toFixed(3)}</span>
                 </div>
-                <div className="w-full bg-slate-800 rounded-full h-2 mt-2 overflow-hidden shadow-[inset_0_0_5px_rgba(0,0,0,0.8)]">
+                <div className="w-full bg-slate-900 rounded-full h-1.5 mt-3 overflow-hidden">
                   <div
-                    className="bg-indigo-500 h-full transition-all duration-300 progress-stripes shadow-[0_0_10px_var(--purple-neon)]"
+                    className="progress-bar-flat-blue h-full transition-all duration-300 progress-stripes"
                     style={{ width: `${(currentRep / 2.0) * 100}%` }}
                   />
                 </div>
-                <span className={`text-[9px] font-mono mt-1 ${repStatusColorClass}`}>
+                <span className={`text-[9px] font-mono mt-2 font-bold ${repStatusColorClass}`}>
                   {repStatusText}
                 </span>
               </div>
@@ -1336,20 +1350,21 @@ Instructions:
           </div>
         </main>
 
-        {/* RIGHT COLUMN: ACTION PANELS & SWARM (5 Cols) */}
-        <aside className="lg:col-span-5 flex flex-col gap-6 w-full">
+        {/* RIGHT COLUMN: ACTION PANELS & SWARM (lg:col-span-4) */}
+        <aside className="lg:col-span-4 flex flex-col gap-6 w-full">
           
-          {/* PLATFORM UPLINK REGISTRY */}
-          <div className="glassmorphic rounded-2xl p-6 flex flex-col gap-4 border-t border-t-white/5">
-            <h2 className="text-sm font-bold uppercase tracking-widest text-[#00F2FE] border-b border-slate-800 pb-2 font-orbitron">
-              🧬 Platform Uplink Registry
+          {/* DIAGNOSTIC ACTION REGISTRY */}
+          <div className="premium-pane p-6 flex flex-col gap-4">
+            <h2 className="text-xs font-black uppercase tracking-widest text-[#00F2FE] border-b border-slate-800 pb-2.5 font-orbitron flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#00F2FE]"></span>
+              Diagnostic Action Registry
             </h2>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-3">
               <button
                 onClick={() => triggerPlatformAction('telegram')}
                 disabled={store.hudState !== 'idle'}
-                className="btn-action bg-sky-600/10 hover:bg-sky-600/30 border border-sky-500/40 text-sky-300 px-3 py-2.5 rounded-lg text-xs font-semibold uppercase tracking-wider text-center cursor-pointer disabled:opacity-40"
+                className="btn-sleek-cyan w-full py-3 rounded-full text-xs font-bold uppercase tracking-widest text-center cursor-pointer disabled:opacity-40"
               >
                 💬 Telegram Uplink
               </button>
@@ -1357,7 +1372,7 @@ Instructions:
               <button
                 onClick={() => triggerPlatformAction('discord')}
                 disabled={store.hudState !== 'idle'}
-                className="btn-action bg-indigo-600/10 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 px-3 py-2.5 rounded-lg text-xs font-semibold uppercase tracking-wider text-center cursor-pointer disabled:opacity-40"
+                className="btn-sleek-purple w-full py-3 rounded-full text-xs font-bold uppercase tracking-widest text-center cursor-pointer disabled:opacity-40"
               >
                 🎮 Discord Uplink
               </button>
@@ -1365,7 +1380,7 @@ Instructions:
               <button
                 onClick={() => triggerPlatformAction('github')}
                 disabled={store.hudState !== 'idle'}
-                className="btn-action bg-purple-600/10 hover:bg-purple-600/30 border border-purple-500/40 text-purple-300 px-3 py-2.5 rounded-lg text-xs font-semibold uppercase tracking-wider text-center cursor-pointer disabled:opacity-40"
+                className="btn-sleek-yellow w-full py-3 rounded-full text-xs font-bold uppercase tracking-widest text-center cursor-pointer disabled:opacity-40"
               >
                 🐙 GitHub Uplink
               </button>
@@ -1373,25 +1388,28 @@ Instructions:
               <button
                 onClick={() => triggerPlatformAction('brave_search')}
                 disabled={store.hudState !== 'idle'}
-                className="btn-action bg-orange-600/10 hover:bg-orange-600/30 border border-orange-500/40 text-orange-300 px-3 py-2.5 rounded-lg text-xs font-semibold uppercase tracking-wider text-center cursor-pointer disabled:opacity-40"
+                className="btn-sleek-yellow w-full py-3 rounded-full text-xs font-bold uppercase tracking-widest text-center cursor-pointer disabled:opacity-40"
               >
                 🔍 Brave Search
               </button>
 
               <button
                 onClick={handleNapToggle}
-                className="btn-action bg-slate-800/50 hover:bg-slate-700/60 border border-slate-700 text-slate-300 px-3 py-2.5 rounded-lg text-xs font-semibold uppercase tracking-wider text-center col-span-2 cursor-pointer"
+                className="w-full py-3 bg-slate-800/40 hover:bg-slate-700/50 border border-slate-700 text-slate-300 rounded-full text-[10px] font-bold uppercase tracking-widest text-center cursor-pointer transition-colors shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]"
               >
-                🛌 Toggle Gesture: Face-Down Nap
+                🛌 Gesture: Face-Down Nap
               </button>
             </div>
           </div>
 
           {/* NEURAL CORE INTERFACE */}
-          <div className="glassmorphic rounded-2xl p-6 flex flex-col gap-4 border-t border-t-white/5">
-            <h2 className="text-sm font-bold uppercase tracking-widest text-[#9B51E0] border-b border-slate-800 pb-2 flex justify-between items-center font-orbitron">
-              <span>🧠 Neural Core Interface</span>
-              <span className={`font-mono text-[9px] font-bold uppercase border px-2 py-0.5 rounded transition-all duration-300 ${
+          <div className="premium-pane p-6 flex flex-col gap-4">
+            <h2 className="text-xs font-black uppercase tracking-widest text-[#9B51E0] border-b border-slate-800 pb-2.5 font-orbitron flex justify-between items-center">
+              <span className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#9B51E0]"></span>
+                Neural Core Interface
+              </span>
+              <span className={`font-mono text-[9px] font-bold uppercase border px-2 py-0.5 rounded-lg transition-all duration-300 ${
                 store.apiKeys[store.activeProvider] || store.executionMode === 'gateway'
                   ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.25)]'
                   : 'border-rose-500/30 bg-rose-500/10 text-rose-400'
@@ -1400,22 +1418,22 @@ Instructions:
               </span>
             </h2>
             
-            <p className="text-xs text-slate-400 font-mono leading-relaxed">
-              Direct telemetry prompt trigger. Executing via <code className="text-purple-300 font-bold">{store.activeProvider.toUpperCase()}</code> in <code className="text-cyan-300 font-bold">{store.executionMode.toUpperCase()}</code> mode.
+            <p className="text-[10px] text-slate-400 font-mono leading-relaxed">
+              Transmit synapse to companion via <code className="text-purple-300 font-bold">{store.activeProvider.toUpperCase()}</code> in <code className="text-cyan-300 font-bold">{store.executionMode.toUpperCase()}</code> mode.
             </p>
 
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-3">
               <input
                 type="text"
                 value={directPrompt}
                 onChange={(e) => setDirectPrompt(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleTransmit()}
-                placeholder="Transmit prompt stream to companion..."
-                className="glass-input flex-1 px-3 py-2.5 rounded-lg text-xs"
+                placeholder="Command Input"
+                className="glass-input w-full px-4 py-3 rounded-full text-xs"
               />
               <button
                 onClick={handleTransmit}
-                className="btn-action bg-purple-600/20 hover:bg-purple-600/35 border border-purple-500/40 text-purple-300 px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider cursor-pointer"
+                className="btn-sleek-solid-purple w-full py-3 rounded-full text-xs font-bold uppercase tracking-widest cursor-pointer text-center"
               >
                 Transmit
               </button>
@@ -1453,28 +1471,96 @@ Instructions:
             )}
           </div>
 
+          {/* ESP-NOW SWARM MESH MONITOR */}
+          <div className="premium-pane p-6 flex flex-col gap-4">
+            <h2 className="text-xs font-black uppercase tracking-widest text-[#00F2FE] border-b border-slate-800 pb-2.5 font-orbitron flex justify-between items-center">
+              <span className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#00F2FE] animate-pulse"></span>
+                ESP-NOW Swarm Mesh Monitor
+              </span>
+              <button
+                onClick={() => {
+                  store.spawnMeshPeer();
+                  audioSynth.playBeep(600, 0.1);
+                }}
+                className="text-[9px] font-mono text-[#00F2FE] hover:underline uppercase cursor-pointer"
+              >
+                + Discover
+              </button>
+            </h2>
+
+            <div className="flex flex-col gap-2">
+              <span className="text-[10px] font-mono text-slate-500 tracking-wider">Active peers</span>
+              
+              <div className="flex flex-col bg-black/30 border border-slate-800/40 rounded-xl p-3 gap-2.5 font-mono text-xs">
+                {store.swarmPeers.length === 0 ? (
+                  <>
+                    {/* Render mockup peers from mockup visual if empty */}
+                    <div className="flex justify-between items-center text-cyan-400 drop-shadow-[0_0_5px_rgba(0,242,254,0.3)] font-bold">
+                      <span>Spectre-02</span>
+                      <span className="text-[9px] uppercase bg-cyan-900/30 px-2 py-0.5 rounded border border-cyan-800/30">ONLINE</span>
+                    </div>
+                    <div className="flex justify-between items-center text-slate-400 font-bold">
+                      <span>Phantom-04</span>
+                      <span className="text-[9px] uppercase bg-slate-900/30 px-2 py-0.5 rounded border border-slate-800/30">ONLINE</span>
+                    </div>
+                  </>
+                ) : (
+                  store.swarmPeers.map((peer, idx) => (
+                    <div key={idx} className="flex justify-between items-center group">
+                      <div className="flex flex-col">
+                        <span className="text-cyan-400 font-bold">{peer.name}</span>
+                        <span className="text-[8px] text-slate-500 font-semibold">{peer.mac} (LVL {peer.lvl})</span>
+                      </div>
+                      <button
+                        onClick={() => {
+                          store.removeMeshPeer(idx);
+                          audioSynth.playErrorWarning();
+                        }}
+                        className="text-[9px] text-rose-500 hover:text-rose-400 uppercase opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        Disconnect
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
 
         </aside>
       </div>
 
       {/* DIAGNOSTIC TERMINAL LOG OUTPUT LOGGER (FULL WIDTH) */}
-      <footer className="mt-8">
-        <div className="glassmorphic rounded-2xl p-6 flex flex-col gap-2 border-t border-t-white/5">
-          <div className="flex justify-between items-center border-b border-slate-800/80 pb-2 mb-2">
-            <span className="text-xs uppercase font-mono tracking-widest text-[#00F2FE] font-bold">
+      <footer className="mt-8 relative z-10">
+        <div className="terminal-window p-6 flex flex-col gap-2">
+          <div className="flex justify-between items-center border-b border-slate-800/80 pb-3 mb-2">
+            <span className="text-xs uppercase font-mono tracking-widest text-[#00F2FE] font-bold flex items-center gap-2">
+              <span className="w-2 h-2 rounded bg-emerald-500 animate-pulse"></span>
               📟 Diagnostic Event Output Logger
             </span>
-            <button
-              onClick={store.clearLogs}
-              className="text-[10px] font-mono text-slate-500 hover:text-slate-300 uppercase cursor-pointer"
-            >
-              Clear Terminal
-            </button>
+            
+            {/* Terminal Window Action Controls & Clear button */}
+            <div className="flex items-center gap-4">
+              <button
+                onClick={store.clearLogs}
+                className="text-[9px] font-mono text-slate-400 hover:text-white uppercase cursor-pointer tracking-wider"
+              >
+                Clear Console
+              </button>
+              <div className="flex items-center gap-1.5 select-none text-slate-500 font-bold font-mono">
+                <span className="cursor-pointer hover:text-slate-300">_</span>
+                <span className="cursor-pointer hover:text-slate-300 text-[10px] px-1">▢</span>
+                <span className="cursor-pointer hover:text-rose-500 text-sm font-light pl-0.5">✕</span>
+              </div>
+            </div>
           </div>
           
-          <div className="h-44 bg-black/60 border border-slate-900 rounded-xl p-4 overflow-y-auto font-mono text-xs text-emerald-500/85 leading-relaxed flex flex-col gap-1.5 scroll-smooth">
+          <div className="h-44 bg-black/55 border border-slate-900 rounded-xl p-4 overflow-y-auto font-mono text-xs text-emerald-500/85 leading-relaxed flex flex-col gap-1.5 scroll-smooth shadow-[inset_0_0_15px_rgba(0,0,0,0.85)]">
             {store.logs.length === 0 ? (
-              <div className="text-slate-600 text-center italic py-10 select-none">Awaiting telemetry packets...</div>
+              <div className="text-slate-600 text-center italic py-10 select-none">
+                [2026-05-28 22:46:21] Core neural nets initialized. Awaiting telemetry packets...
+              </div>
             ) : (
               store.logs.map((log: LogEntry, idx: number) => {
                 let color = 'text-emerald-400/90';
