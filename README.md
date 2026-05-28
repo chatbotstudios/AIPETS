@@ -205,6 +205,39 @@ hermes gateway restart
 
 ---
 
+## 🌐 Universal Agent Telemetry (LiteLLM)
+
+You can easily route **any Python Agent** (LangChain, Cursor, Autogen, custom scripts) to automatically emit real-time visual telemetry to your HUD.
+
+### Method 1: The Local Proxy Drop-in (Easiest)
+Deploy this Next.js app to Vercel or run it locally, then point your agent's API base to the proxy endpoint. The proxy will seamlessly intercept the calls, trigger the HUD animations, and forward the completions payload to your actual LLM provider!
+
+```python
+import litellm
+
+# 1. Point LiteLLM to your AIPETS Proxy 
+litellm.api_base = "https://your-aipets.vercel.app/api/proxy" 
+# (Or http://localhost:3000/api/proxy)
+
+# 2. Add your API Keys in the AIPETS UI or Vercel Environment Variables
+# 3. Every LLM call will now trigger the Braille matrix and glow effects instantly!
+```
+
+### Method 2: Python Callback Logger
+If you prefer not to proxy your traffic, use our native LiteLLM callback script:
+
+1. Copy `connectors/aipet_litellm_callback.py` into your agent project.
+2. Register the callback:
+```python
+import litellm
+from aipet_litellm_callback import AIPETCallback
+
+# Register the callback to point to your live HUD
+litellm.callbacks = [AIPETCallback(pulse_url="https://your-aipets.vercel.app/api/pulse")]
+```
+
+---
+
 ## 📋 Version History
 
 ### v2.0.0 — Braille Matrix Overhaul (2026-05-28)

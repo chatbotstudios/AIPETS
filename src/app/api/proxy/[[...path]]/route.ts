@@ -9,14 +9,27 @@ export async function POST(req: Request) {
     modelName = body.model || "gpt-4o-mini";
     const messages = body.messages || [];
     const prompt = messages[messages.length - 1]?.content || "Hello";
+    const tools = body.tools || [];
+    const hasTools = Array.isArray(tools) && tools.length > 0;
 
     console.log(`[Proxy] Intercepted completions request for: ${modelName}`);
 
-    // 1. Broadcast "thinking" pulse to sseBroker
-    sseBroker.broadcast("thinking", {
-      model: modelName,
-      text: prompt.length > 60 ? prompt.substring(0, 57) + "..." : prompt
-    });
+    // 1. Broadcast initial pulse to sseBroker
+    if (hasTools) {
+      const toolNames = tools.map((t: any) => t?.function?.name || 'tool').join(', ');
+      sseBroker.broadcast("tool_calls", {
+        model: modelName,
+        text: `Executing tools: ${toolNames}`,
+        tools: toolNames,
+        source: req.headers.get('x-aipet-source') || 'proxy'
+      });
+    } else {
+      sseBroker.broadcast("thinking", {
+        model: modelName,
+        text: prompt.length > 60 ? prompt.substring(0, 57) + "..." : prompt,
+        source: req.headers.get('x-aipet-source') || 'proxy'
+      });
+    }
 
     // 2. Locate API Keys (from process.env or system fallback)
     const geminiKey = process.env.GEMINI_API_KEY;
@@ -183,7 +196,8 @@ export async function POST(req: Request) {
       model: modelName,
       text: responseText,
       tokens: tokenEstimate,
-      source: "cyberspace"
+      action: hasTools ? 'tool_call' : 'chat_complete',
+      source: req.headers.get('x-aipet-source') || "cyberspace"
     });
 
     // 5. Construct OpenAI compatible success JSON response

@@ -252,6 +252,15 @@ export default function AIPETHUD() {
       store.addLog(`[Cyberspace Link] ┊ 🌐 incoming   telemetry pulse received from ${model}: "${text}"`, "mesh");
       triggerParticleBurst();
     }
+    else if (status === "tool_calls") {
+      store.setAIResponse({
+        status: 'thinking',
+        model,
+        text: `Executing tool sequence: ${data.tools || text}`
+      });
+      store.addLog(`[Cyberspace Tool] ┊ ⚙️ tool_call  agent triggered tool execution: ${data.tools || text}`, "mesh");
+      triggerParticleBurst();
+    }
     else if (status === "success") {
       store.setAIResponse({
         status: 'success',
