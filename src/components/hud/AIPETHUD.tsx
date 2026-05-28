@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { HUDState, LogEntry, SwarmPeer, useAppState } from '@/lib/store';
 import { audioSynth } from '@/lib/audio-synth';
+import OnboardingWizard from './OnboardingWizard';
 
 // ═══════════════════════════════════════════════════════════════
 // BRAILLE & DOT ANIMATION SYSTEM — Rich per-state sequences
@@ -128,6 +129,7 @@ export default function AIPETHUD() {
 
   // Local UI state
   const [showSettings, setShowSettings] = useState(false);
+  const [showWizard, setShowWizard] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('No file uploaded');
   const [uploadStatusClass, setUploadStatusClass] = useState('text-slate-400 italic');
   const [directPrompt, setDirectPrompt] = useState('');
@@ -1101,6 +1103,16 @@ Instructions:
         {/* Header Action Badges */}
         <div className="md:absolute md:top-0 md:right-0 flex flex-wrap items-center gap-2 mt-4 md:mt-0 justify-center">
           <button
+            onClick={() => {
+              audioSynth.playBeep(550, 0.1);
+              setShowWizard(true);
+            }}
+            className="text-[10px] text-cyan-400 hover:text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/10 px-3 py-1.5 rounded uppercase tracking-widest font-mono transition-all cursor-pointer"
+          >
+            🔮 Setup Wizard
+          </button>
+
+          <button
             onClick={handleOpenSettings}
             className="text-[10px] text-purple-400 hover:text-purple-300 border border-purple-500/30 hover:bg-purple-500/10 px-3 py-1.5 rounded uppercase tracking-widest font-mono transition-all cursor-pointer"
           >
@@ -1595,10 +1607,14 @@ Instructions:
                   💾 Save Configuration
                 </button>
               </div>
-
             </div>
           </div>
         </div>
+      )}
+
+      {/* ONBOARDING WIZARD MODAL */}
+      {showWizard && (
+        <OnboardingWizard onComplete={() => setShowWizard(false)} />
       )}
     </div>
   );
