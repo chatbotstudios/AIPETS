@@ -1325,95 +1325,49 @@ export default function AIPETHUD() {
             )}
           </div>
 
-          {/* SWARM MESH MONITOR */}
+          {/* DIAGNOSTIC EVENT OUTPUT LOGGER */}
           <div className="glassmorphic rounded-2xl p-6 flex flex-col gap-3 border-t border-t-white/5">
             <div className="flex justify-between items-center border-b border-slate-800 pb-2">
-              <h2 className="text-sm font-bold uppercase tracking-widest text-[#00FF87] font-orbitron">
-                🌐 Swarm Mesh Monitor (ESP-NOW)
+              <h2 className="text-sm font-bold uppercase tracking-widest text-[#00F2FE] font-orbitron">
+                📟 Diagnostic Event Logger
               </h2>
               <button
-                onClick={store.spawnMeshPeer}
-                className="bg-emerald-600/20 hover:bg-emerald-600/35 border border-emerald-500/30 text-emerald-400 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide cursor-pointer"
+                onClick={store.clearLogs}
+                className="text-[10px] font-mono text-slate-500 hover:text-slate-300 uppercase cursor-pointer"
               >
-                + Spawn Node
+                Clear Terminal
               </button>
             </div>
-
-            <div className="flex flex-col gap-2 max-h-48 overflow-y-auto pr-1">
-              {store.swarmPeers.length === 0 ? (
-                <div className="text-xs font-mono text-slate-500 text-center py-4">
-                  No remote sibling nodes in range...
+            
+            <div className="h-64 bg-black/60 border border-slate-900/60 rounded-xl p-4 overflow-y-auto font-mono text-xs text-emerald-500/85 leading-relaxed flex flex-col gap-1.5 scroll-smooth pr-1">
+              {store.logs.length === 0 ? (
+                <div className="text-slate-600 text-center italic py-16 select-none">
+                  Awaiting telemetry packets...
                 </div>
               ) : (
-                store.swarmPeers.map((peer, idx) => (
-                  <div
-                    key={idx}
-                    className="bg-black/30 border border-slate-800/80 rounded-lg p-3 flex justify-between items-center transition-all duration-300 hover:border-cyan-500/20"
-                  >
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-xs font-mono font-bold text-slate-200">{peer.name}</span>
-                      <span className="text-[9px] font-mono text-slate-500">{peer.mac}</span>
+                store.logs.map((log: LogEntry, idx: number) => {
+                  let color = 'text-emerald-400/90';
+                  if (log.type === 'success') color = 'text-green-400 font-bold';
+                  if (log.type === 'warning') color = 'text-yellow-400';
+                  if (log.type === 'error') color = 'text-rose-500 font-bold';
+                  if (log.type === 'mesh') color = 'text-cyan-400';
+                  
+                  return (
+                    <div key={idx} className={`${color} flex items-start gap-2 animate-[slideUp_0.15s_ease]`}>
+                      <span className="text-slate-500 whitespace-nowrap font-mono select-none">[{log.time}]</span>
+                      <div className="break-words">
+                        <span className="text-purple-400 font-bold tracking-widest mr-1.5 select-none">{log.face}</span>
+                        {log.message}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-[10px] font-mono text-cyan-400 bg-cyan-950/40 border border-cyan-800/40 px-1.5 py-0.5 rounded">
-                        Lvl {peer.lvl}
-                      </span>
-                      <button
-                        onClick={() => store.removeMeshPeer(idx)}
-                        className="text-slate-500 hover:text-rose-500 transition-colors duration-150 text-base font-mono cursor-pointer"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </div>
 
         </aside>
       </div>
-
-      {/* DIAGNOSTIC TERMINAL LOG OUTPUT LOGGER (FULL WIDTH) */}
-      <footer className="mt-8">
-        <div className="glassmorphic rounded-2xl p-6 flex flex-col gap-2 border-t border-t-white/5">
-          <div className="flex justify-between items-center border-b border-slate-800/80 pb-2 mb-2">
-            <span className="text-xs uppercase font-mono tracking-widest text-[#00F2FE] font-bold">
-              Diagnostic Event Output Logger
-            </span>
-            <button
-              onClick={store.clearLogs}
-              className="text-[10px] font-mono text-slate-500 hover:text-slate-300 uppercase cursor-pointer"
-            >
-              Clear Terminal
-            </button>
-          </div>
-          
-          <div className="h-40 bg-black/60 border border-slate-900 rounded-xl p-4 overflow-y-auto font-mono text-xs text-emerald-500/85 leading-relaxed flex flex-col gap-1.5 scroll-smooth">
-            {store.logs.length === 0 ? (
-              <div className="text-slate-600 text-center italic py-10 select-none">Awaiting telemetry packets...</div>
-            ) : (
-              store.logs.map((log: LogEntry, idx: number) => {
-                let color = 'text-emerald-400/90';
-                if (log.type === 'success') color = 'text-green-400 font-bold';
-                if (log.type === 'warning') color = 'text-yellow-400';
-                if (log.type === 'error') color = 'text-rose-500 font-bold';
-                if (log.type === 'mesh') color = 'text-cyan-400';
-                
-                return (
-                  <div key={idx} className={`${color} flex items-start gap-2 animate-[slideUp_0.15s_ease]`}>
-                    <span className="text-slate-500 whitespace-nowrap font-mono select-none">[{log.time}]</span>
-                    <div>
-                      <span className="text-purple-400 font-bold tracking-widest mr-1.5 select-none">{log.face}</span>
-                      {log.message}
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
-      </footer>
 
       {/* ADVANCED NEURAL INTERFACE SETTINGS MODAL */}
       {showSettings && (
