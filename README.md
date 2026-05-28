@@ -17,7 +17,7 @@
 - 60 FPS render loop using direct DOM refs (zero React re-render overhead)
 
 ### ⚡ Real-Time Agent Telemetry
-- **SSE (Server-Sent Events)** for instant browser push from any AI agent
+- **Vercel-Compatible Short-Polling** for instant browser updates across serverless environments
 - **Hermes Agent hook** — auto-pulses on every LLM response via Discord/Telegram
 - Source badges show which platform triggered the reaction (⚡ HERMES, 🎮 DISCORD, ✈️ TELEGRAM)
 - Per-state screen glow animations (cyan, purple, yellow, green, red)
@@ -109,13 +109,17 @@ curl -X POST http://localhost:3000/api/pulse \
 | `source` | string | `hermes`, `discord`, `telegram`, `direct`, `cyberspace` |
 | `tokens` | number | Token count (triggers XP gain on success) |
 
-### GET `/api/sse`
+### GET `/api/pulse` (Browser Polling)
 
-EventSource stream for real-time browser push:
+Fetch the latest event state (designed specifically to support Vercel Serverless isolation):
 
 ```javascript
-const es = new EventSource('/api/sse');
-es.onmessage = (e) => console.log(JSON.parse(e.data));
+// Poll every 2 seconds for fresh pulses
+const res = await fetch(`/api/pulse?after=${lastTimestamp}`);
+if (res.status === 200) {
+  const pulse = await res.json();
+  console.log("New Pulse:", pulse);
+}
 ```
 
 ---
@@ -124,17 +128,17 @@ es.onmessage = (e) => console.log(JSON.parse(e.data));
 
 ```
 ┌─────────────────────────────────────┐
-│  Remote Agents (Hermes/Discord/TG)  │
-│  post_llm_call shell hook           │
-│  → curl POST /api/pulse             │
+│  Remote Agents (Hermes/OpenClaw)    │
+│  Native Transport Hooks             │
+│  → POST /api/pulse                  │
 └──────────────┬──────────────────────┘
-               │ via Tailscale / LAN
+               │ via Cyberspace
                ▼
 ┌─────────────────────────────────────┐
-│  AIPETS (Next.js :3000)            │
-│  /api/pulse → SSE Broker           │
-│  /api/sse  → Browser EventSource   │
-│  → Physical Buddy auto-relay       │
+│  AIPETS (Vercel Serverless)         │
+│  /api/pulse (POST) → Global Store   │
+│  /api/pulse (GET)  ← Browser Poll   │
+│  → Physical Buddy auto-relay        │
 └──────────────┬──────────────────────┘
                │
     ┌──────────┴──────────┐
@@ -171,36 +175,38 @@ src/
 
 ---
 
-## 🔧 Hermes Agent Integration
+## 🔧 Autonomous Agent Integration
 
-To connect a remote [Hermes Agent](https://github.com/chatbotstudios), add a shell hook:
+To seamlessly link your autonomous VPS agents to your live dashboard, export the dashboard URL in your agent's environment, and patch its streaming transport.
 
-**1. Create the hook script:**
+### 1. Environment Configuration
+On your agent's machine (e.g., your DigitalOcean VPS), set your Vercel deployment URL globally or in the `.env`:
 ```bash
-# ~/.hermes/agent-hooks/buddy-pulse.sh
-#!/usr/bin/env bash
-payload="$(cat -)"
-response=$(echo "$payload" | jq -r '.extra.response_text // "activity"' 2>/dev/null)
-BUDDY_URL="${BUDDY_URL:-http://<YOUR_MAC_IP>:3000/api/pulse}"
-curl -s -X POST "$BUDDY_URL" \
-  -H "Content-Type: application/json" \
-  -d "{\"status\": \"success\", \"model\": \"Hermes Agent\", \"text\": \"$(echo "$response" | head -c 200)\", \"source\": \"hermes\"}" \
-  --connect-timeout 3 >/dev/null 2>&1 &
-printf '{}\n'
+export AIPETS_DASHBOARD_URL="https://aipets-brown.vercel.app"
 ```
 
-**2. Register in `~/.hermes/config.yaml`:**
-```yaml
-hooks:
-  post_llm_call:
-    - command: ~/.hermes/agent-hooks/buddy-pulse.sh
-      timeout: 10
-hooks_auto_accept: true
+### 2. Hermes / Python Agent Hook
+Drop the `aipets_emitter.py` utility into your agent core to automatically wrap OpenAI/LiteLLM completions:
+```python
+from aipets_emitter import aipets_emit
+
+aipets_emit("connecting", "Initializing uplink...")
+# ... execute LLM call
+aipets_emit("success", result_text, total_tokens)
 ```
 
-**3. Restart the gateway:**
-```bash
-hermes gateway restart
+### 3. OpenClaw / JS Agent Hook
+For OpenClaw, intercept the raw provider stream (e.g., `transport-stream.js`) to stream real-time events to the HUD during long-running tasks:
+```javascript
+const aipetsEmit = (status, text, tokens, tools) => {
+  fetch(`${process.env.AIPETS_DASHBOARD_URL}/api/pulse`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status, text, tokens, tools, source: "openclaw" })
+  }).catch(() => {});
+};
+
+aipetsEmit("thinking", "Thinking...", undefined, "web_search");
 ```
 
 ---
@@ -239,6 +245,11 @@ litellm.callbacks = [AIPETCallback(pulse_url="https://your-aipets.vercel.app/api
 ---
 
 ## 📋 Version History
+
+### v2.0.1 — Vercel Serverless Telemetry (2026-05-28)
+- 📡 **Vercel Polling Engine**: Migrated from SSE to a robust 2s polling store to natively support Vercel serverless execution bounds.
+- 🔧 **Deep Agent Integration**: Hot-patched OpenClaw's Google/Gemini transports and Hermes' OpenAI transports to natively emit real-time stream status to the dashboard.
+- 🔍 **Brave Search Telemetry Integration**: Dashboard cyberspace routines directly tap into `.env` Brave keys.
 
 ### v2.0.0 — Braille Matrix Overhaul (2026-05-28)
 - 🧬 **5-row × 8-column braille matrix** (up from 3×6)
