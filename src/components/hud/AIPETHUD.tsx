@@ -1222,41 +1222,6 @@ export default function AIPETHUD() {
                 🛌 Toggle Gesture: Face-Down Nap
               </button>
             </div>
-
-            {/* Simulated Parameter Sliders */}
-            <div className="border-t border-slate-800/80 pt-3 mt-1 flex flex-col gap-3">
-              <div>
-                <div className="flex justify-between items-center text-xs font-mono text-slate-400 mb-1">
-                  <span>Simulate Hardware Battery</span>
-                  <span className="font-bold text-slate-200">{store.batteryPercent}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="5"
-                  max="100"
-                  value={store.batteryPercent}
-                  onChange={(e) => store.setBatteryPercent(parseInt(e.target.value))}
-                  className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-[#00F2FE]"
-                />
-              </div>
-              
-              <div>
-                <div className="flex justify-between items-center text-xs font-mono text-slate-400 mb-1">
-                  <span>Swarm Multiplier Peer Count</span>
-                  <span className="font-bold text-slate-200">
-                    {store.swarmPeers.length + 1} ({store.swarmPeers.length} Peers + Self)
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min="1"
-                  max="5"
-                  value={store.swarmPeers.length + 1}
-                  onChange={(e) => store.setSwarmCount(parseInt(e.target.value))}
-                  className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-[#9B51E0]"
-                />
-              </div>
-            </div>
           </div>
 
           {/* NEURAL CORE INTERFACE */}
