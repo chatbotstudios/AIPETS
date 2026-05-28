@@ -409,7 +409,7 @@ export const useAppState = create<AppState>((set, get) => ({
     }
 
     set((state) => ({
-      logs: [...state.logs, { time, face, message, type }].slice(-100) // Keep last 100 entries
+      logs: [...state.logs, { time, face, message, type }].slice(-20) // Keep last 20 entries
     }));
   },
 

@@ -173,6 +173,18 @@ export default function AIPETHUD() {
   const [discordChannelId, setDiscordChannelId] = useState('');
   const [discordUserId, setDiscordUserId] = useState('');
   const [githubPat, setGithubPat] = useState('');
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+
+  const handleCopyLog = async (log: any, idx: number) => {
+    try {
+      const plainText = `[${log.time}] ${log.face} ${log.message}`;
+      await navigator.clipboard.writeText(plainText);
+      setCopiedIndex(idx);
+      setTimeout(() => {
+        setCopiedIndex(null);
+      }, 1200);
+    } catch (err) {}
+  };
 
   // Load local state and keys on mount
   useEffect(() => {
@@ -1649,7 +1661,7 @@ Instructions:
                 [2026-05-28 22:46:21] Core neural nets initialized. Awaiting telemetry packets...
               </div>
             ) : (
-              store.logs.map((log: LogEntry, idx: number) => {
+              store.logs.slice(-20).map((log: any, idx: number) => {
                 let color = 'text-emerald-400/90';
                 if (log.type === 'success') color = 'text-green-400 font-bold';
                 if (log.type === 'warning') color = 'text-yellow-400';
@@ -1657,12 +1669,23 @@ Instructions:
                 if (log.type === 'mesh') color = 'text-cyan-400';
                 
                 return (
-                  <div key={idx} className={`${color} flex items-start gap-2 animate-[slideUp_0.15s_ease]`}>
-                    <span className="text-slate-500 whitespace-nowrap font-mono select-none">[{log.time}]</span>
-                    <div>
-                      <span className="text-purple-400 font-bold tracking-widest mr-1.5 select-none">{log.face}</span>
-                      {log.message}
-                    </div>
+                  <div 
+                    key={idx} 
+                    onClick={() => handleCopyLog(log, idx)}
+                    className={`${color} flex items-start gap-2 animate-[slideUp_0.15s_ease] cursor-pointer hover:bg-white/5 p-1 rounded transition-colors select-text`}
+                    title="Click to copy log line"
+                  >
+                    {copiedIndex === idx ? (
+                      <span className="text-green-300 font-bold font-mono">📋 COPIED TO CLIPBOARD!</span>
+                    ) : (
+                      <>
+                        <span className="text-slate-500 whitespace-nowrap font-mono select-none">[{log.time}]</span>
+                        <div>
+                          <span className="text-purple-400 font-bold tracking-widest mr-1.5 select-none">{log.face}</span>
+                          {log.message}
+                        </div>
+                      </>
+                    )}
                   </div>
                 );
               })
