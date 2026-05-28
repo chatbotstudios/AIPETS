@@ -8,16 +8,16 @@ export async function POST(req: Request) {
     const action = body.action || "";
     const prompt = body.prompt || "";
 
-    const tgToken = process.env.TELEGRAM_BOT_TOKEN;
-    const tgGroup = process.env.ALLOWED_GROUPS?.split(',')[0] || "0";
+    const tgToken = body.telegramToken || process.env.TELEGRAM_BOT_TOKEN;
+    const tgGroup = body.telegramChatId || process.env.ALLOWED_GROUPS?.split(',')[0] || "0";
     
-    const discordToken = process.env.DISCORD_BOT_TOKEN;
-    const discordChannel = process.env.DISCORD_CHANNEL_ID;
+    const discordToken = body.discordBotToken || process.env.DISCORD_BOT_TOKEN;
+    const discordChannel = body.discordChannelId || process.env.DISCORD_CHANNEL_ID;
     
-    const githubPat = process.env.AGENT_GITHUB_PAT;
+    const githubPat = body.agentGithubPat || process.env.AGENT_GITHUB_PAT;
     const braveSearchApi = process.env.BRAVE_SEARCH_API;
 
-    console.log(`[Platform API] Trigger action: ${action}`);
+    console.log(`[Platform API] Trigger action: ${action} with dynamic config overrides`);
 
     if (action === "telegram") {
       if (!tgToken) throw new Error("TELEGRAM_BOT_TOKEN not configured in .env");

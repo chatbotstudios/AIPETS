@@ -66,11 +66,11 @@ body {
 }
 
 /* Neon Dynamic Glow Borders */
-.border-state-connecting { border-left-color: var(--cyan-neon) !important; box-shadow: inset 0 0 15px rgba(0, 242, 254, 0.1); }
-.border-state-thinking { border-left-color: var(--purple-neon) !important; box-shadow: inset 0 0 15px rgba(155, 81, 224, 0.1); }
-.border-state-tool_calls { border-left-color: var(--yellow-neon) !important; box-shadow: inset 0 0 15px rgba(255, 210, 0, 0.1); }
-.border-state-success { border-left-color: var(--green-neon) !important; box-shadow: inset 0 0 15px rgba(0, 255, 135, 0.1); }
-.border-state-error { border-left-color: var(--red-neon) !important; box-shadow: inset 0 0 15px rgba(255, 51, 102, 0.1); }
+.border-state-connecting { border-left-color: #FF7700 !important; box-shadow: inset 0 0 15px rgba(255, 119, 0, 0.15), 0 0 10px rgba(255, 119, 0, 0.1); }
+.border-state-thinking { border-left-color: #3B82F6 !important; box-shadow: inset 0 0 15px rgba(59, 130, 246, 0.15), 0 0 10px rgba(59, 130, 246, 0.1); }
+.border-state-tool_calls { border-left-color: #9B51E0 !important; box-shadow: inset 0 0 15px rgba(155, 81, 224, 0.15), 0 0 10px rgba(155, 81, 224, 0.1); }
+.border-state-success { border-left-color: #00FF87 !important; box-shadow: inset 0 0 15px rgba(0, 255, 135, 0.15), 0 0 10px rgba(0, 255, 135, 0.1); }
+.border-state-error { border-left-color: #FF3366 !important; box-shadow: inset 0 0 15px rgba(255, 51, 102, 0.15), 0 0 10px rgba(255, 51, 102, 0.1); }
 .border-state-idle { border-left-color: var(--gray-dim) !important; }
 
 /* HUD Header typography */
@@ -246,15 +246,15 @@ body {
 /* ═══════════════════════════════════════════════════════════ */
 
 .braille-screen-connecting {
-  animation: screen-pulse-cyan 2s ease-in-out infinite;
+  animation: screen-pulse-orange 2s ease-in-out infinite;
 }
 
 .braille-screen-thinking {
-  animation: screen-pulse-purple 1.5s ease-in-out infinite;
+  animation: screen-pulse-blue 1.5s ease-in-out infinite;
 }
 
 .braille-screen-tool_calls {
-  animation: screen-pulse-yellow 1.8s ease-in-out infinite;
+  animation: screen-pulse-purple 1.8s ease-in-out infinite;
 }
 
 .braille-screen-success {
@@ -273,9 +273,14 @@ body {
   animation: none;
 }
 
-@keyframes screen-pulse-cyan {
-  0%, 100% { box-shadow: inset 0 0 20px rgba(0, 242, 254, 0.05); }
-  50% { box-shadow: inset 0 0 40px rgba(0, 242, 254, 0.15), inset 0 0 80px rgba(0, 242, 254, 0.05); }
+@keyframes screen-pulse-orange {
+  0%, 100% { box-shadow: inset 0 0 20px rgba(255, 119, 0, 0.05); }
+  50% { box-shadow: inset 0 0 40px rgba(255, 119, 0, 0.18), inset 0 0 80px rgba(255, 119, 0, 0.05); }
+}
+
+@keyframes screen-pulse-blue {
+  0%, 100% { box-shadow: inset 0 0 20px rgba(59, 130, 246, 0.05); }
+  50% { box-shadow: inset 0 0 45px rgba(59, 130, 246, 0.18), inset 0 0 80px rgba(59, 130, 246, 0.05); }
 }
 
 @keyframes screen-pulse-purple {
