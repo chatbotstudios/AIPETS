@@ -1347,49 +1347,50 @@ Instructions:
             )}
           </div>
 
-          {/* DIAGNOSTIC EVENT OUTPUT LOGGER */}
-          <div className="glassmorphic rounded-2xl p-6 flex flex-col gap-3 border-t border-t-white/5">
-            <div className="flex justify-between items-center border-b border-slate-800 pb-2">
-              <h2 className="text-sm font-bold uppercase tracking-widest text-[#00F2FE] font-orbitron">
-                📟 Diagnostic Event Logger
-              </h2>
-              <button
-                onClick={store.clearLogs}
-                className="text-[10px] font-mono text-slate-500 hover:text-slate-300 uppercase cursor-pointer"
-              >
-                Clear Terminal
-              </button>
-            </div>
-            
-            <div className="h-64 bg-black/60 border border-slate-900/60 rounded-xl p-4 overflow-y-auto font-mono text-xs text-emerald-500/85 leading-relaxed flex flex-col gap-1.5 scroll-smooth pr-1">
-              {store.logs.length === 0 ? (
-                <div className="text-slate-600 text-center italic py-16 select-none">
-                  Awaiting telemetry packets...
-                </div>
-              ) : (
-                store.logs.map((log: LogEntry, idx: number) => {
-                  let color = 'text-emerald-400/90';
-                  if (log.type === 'success') color = 'text-green-400 font-bold';
-                  if (log.type === 'warning') color = 'text-yellow-400';
-                  if (log.type === 'error') color = 'text-rose-500 font-bold';
-                  if (log.type === 'mesh') color = 'text-cyan-400';
-                  
-                  return (
-                    <div key={idx} className={`${color} flex items-start gap-2 animate-[slideUp_0.15s_ease]`}>
-                      <span className="text-slate-500 whitespace-nowrap font-mono select-none">[{log.time}]</span>
-                      <div className="break-words">
-                        <span className="text-purple-400 font-bold tracking-widest mr-1.5 select-none">{log.face}</span>
-                        {log.message}
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
 
         </aside>
       </div>
+
+      {/* DIAGNOSTIC TERMINAL LOG OUTPUT LOGGER (FULL WIDTH) */}
+      <footer className="mt-8">
+        <div className="glassmorphic rounded-2xl p-6 flex flex-col gap-2 border-t border-t-white/5">
+          <div className="flex justify-between items-center border-b border-slate-800/80 pb-2 mb-2">
+            <span className="text-xs uppercase font-mono tracking-widest text-[#00F2FE] font-bold">
+              📟 Diagnostic Event Output Logger
+            </span>
+            <button
+              onClick={store.clearLogs}
+              className="text-[10px] font-mono text-slate-500 hover:text-slate-300 uppercase cursor-pointer"
+            >
+              Clear Terminal
+            </button>
+          </div>
+          
+          <div className="h-44 bg-black/60 border border-slate-900 rounded-xl p-4 overflow-y-auto font-mono text-xs text-emerald-500/85 leading-relaxed flex flex-col gap-1.5 scroll-smooth">
+            {store.logs.length === 0 ? (
+              <div className="text-slate-600 text-center italic py-10 select-none">Awaiting telemetry packets...</div>
+            ) : (
+              store.logs.map((log: LogEntry, idx: number) => {
+                let color = 'text-emerald-400/90';
+                if (log.type === 'success') color = 'text-green-400 font-bold';
+                if (log.type === 'warning') color = 'text-yellow-400';
+                if (log.type === 'error') color = 'text-rose-500 font-bold';
+                if (log.type === 'mesh') color = 'text-cyan-400';
+                
+                return (
+                  <div key={idx} className={`${color} flex items-start gap-2 animate-[slideUp_0.15s_ease]`}>
+                    <span className="text-slate-500 whitespace-nowrap font-mono select-none">[{log.time}]</span>
+                    <div>
+                      <span className="text-purple-400 font-bold tracking-widest mr-1.5 select-none">{log.face}</span>
+                      {log.message}
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      </footer>
 
       {/* ADVANCED NEURAL INTERFACE SETTINGS MODAL */}
       {showSettings && (
