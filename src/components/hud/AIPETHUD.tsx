@@ -198,8 +198,8 @@ export default function AIPETHUD() {
     setDiscordUserId(localStorage.getItem('CLAWPETS_KEY_DISCORD_USER_ID') || '');
     setGithubPat(localStorage.getItem('CLAWPETS_KEY_GITHUB_PAT') || '');
     
-    // Start background EventSource SSE listening for LiteLLM telemetry pulses
-    initSSEListener();
+    // Start background pulse polling for VPS/cyberspace telemetry
+    initPulsePoller();
   }, []);
 
   // Livelier Thought Ticker Hook: Dynamic Kawaii state engine
@@ -272,37 +272,69 @@ export default function AIPETHUD() {
     pulse();
   }, [store.hudState, store.aiResponse, store.buddyIp]);
 
-  // EventSource SSE Listener for Telemetry Proxy
-  const initSSEListener = () => {
+  // Pulse Poller: Polls GET /api/pulse every 2 seconds for VPS/cyberspace telemetry.
+  // Replaces the broken EventSource SSE approach which fails on Vercel serverless
+  // due to process isolation between /api/pulse POST and /api/sse GET invocations.
+  const initPulsePoller = () => {
     if (typeof window === 'undefined') return;
-    
-    console.log("[Telemetry Mesh] Initializing EventSource SSE receiver...");
-    store.addLog("[Telemetry Mesh] ┊ 📡 listening  cyberspace LLM proxy events via /api/sse", "mesh");
-    
-    let eventSource = new EventSource('/api/sse');
 
-    eventSource.onopen = () => {
-      store.setEmitterActive(true);
-      store.addLog("[Telemetry Mesh] ┊ 📡 established sse downlink channel secured.", "mesh");
-    };
+    let lastPulseTimestamp = 0;
+    let consecutiveErrors = 0;
 
-    eventSource.onerror = (err) => {
-      console.warn("[Telemetry Mesh] EventSource disconnected. Retrying...");
-      store.setEmitterActive(false);
-      eventSource.close();
-      
-      // Auto reconnect after 4 seconds
-      setTimeout(initSSEListener, 4000);
-    };
+    console.log("[Telemetry Mesh] Initializing pulse poller (2s interval)...");
+    store.addLog("[Telemetry Mesh] ┊ 📡 listening  cyberspace VPS pulse polling active via /api/pulse", "mesh");
+    store.setEmitterActive(true);
 
-    eventSource.onmessage = (event) => {
+    const poll = async () => {
       try {
-        const data = JSON.parse(event.data);
-        handleTelemetryPulse(data);
-      } catch (e) {
-        console.error("[Telemetry Mesh] Error parsing SSE payload:", e);
+        const url = lastPulseTimestamp > 0
+          ? `/api/pulse?after=${lastPulseTimestamp}`
+          : `/api/pulse`;
+
+        const response = await fetch(url, { cache: 'no-store' });
+
+        if (response.status === 204) {
+          // No new pulse — all good, connection verified
+          consecutiveErrors = 0;
+          if (!useAppState.getState().emitterActive) {
+            store.setEmitterActive(true);
+          }
+          return;
+        }
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        consecutiveErrors = 0;
+
+        if (!useAppState.getState().emitterActive) {
+          store.setEmitterActive(true);
+          store.addLog("[Telemetry Mesh] ┊ 📡 established pulse polling channel secured.", "mesh");
+        }
+
+        // Only process if this is a genuinely new pulse
+        if (data.timestamp && data.timestamp > lastPulseTimestamp && data.status !== 'idle') {
+          lastPulseTimestamp = data.timestamp;
+          handleTelemetryPulse(data);
+        } else if (data.timestamp) {
+          lastPulseTimestamp = data.timestamp;
+        }
+      } catch (err) {
+        consecutiveErrors++;
+        if (consecutiveErrors >= 5) {
+          store.setEmitterActive(false);
+          console.warn("[Telemetry Mesh] Pulse polling degraded — multiple consecutive failures.");
+        }
       }
     };
+
+    // Initial poll
+    poll();
+
+    // Poll every 2 seconds
+    setInterval(poll, 2000);
   };
 
   const handleTelemetryPulse = (data: any) => {
