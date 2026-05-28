@@ -130,6 +130,8 @@ export default function AIPETHUD() {
   // Local UI state
   const [showSettings, setShowSettings] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
+  const [showEnvEditor, setShowEnvEditor] = useState(false);
+  const [envText, setEnvText] = useState('');
   const [uploadStatus, setUploadStatus] = useState('No file uploaded');
   const [uploadStatusClass, setUploadStatusClass] = useState('text-slate-400 italic');
   const [directPrompt, setDirectPrompt] = useState('');
@@ -1006,6 +1008,54 @@ Instructions:
     setShowSettings(false);
   };
 
+  // Direct .env editor handlers
+  const handleOpenEnvEditor = () => {
+    let currentEnv = `# --- AIPETS Environment Configurations ---\n`;
+    currentEnv += `AIPET_NAME=${setname || store.petState?.name || 'GhostScout'}\n`;
+    currentEnv += `BUDDY_IP=${buddyIp || '100.74.116.128'}\n\n`;
+    currentEnv += `GEMINI_API_KEY=${geminiKey}\n`;
+    currentEnv += `OPENAI_API_KEY=${openaiKey}\n`;
+    currentEnv += `ANTHROPIC_API_KEY=${anthropicKey}\n`;
+    currentEnv += `XAI_API_KEY=${xaiKey}\n`;
+    currentEnv += `DEEPSEEK_API_KEY=${deepseekKey}\n`;
+    
+    setEnvText(currentEnv);
+    setShowEnvEditor(true);
+    audioSynth.playBeep(450, 0.08);
+  };
+
+  const handleSaveEnvText = () => {
+    const lines = envText.split('\n');
+    let count = 0;
+    
+    lines.forEach(line => {
+      line = line.trim();
+      if (!line || line.startsWith('#') || !line.includes('=')) return;
+
+      let [key, val] = line.split('=', 2);
+      key = key.trim();
+      val = val.trim();
+
+      if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+        val = val.substring(1, val.length - 1);
+      }
+
+      if (key === "GEMINI_API_KEY") { setGeminiKey(val); count++; }
+      else if (key === "OPENAI_API_KEY") { setOpenaiKey(val); count++; }
+      else if (key === "ANTHROPIC_API_KEY") { setAnthropicKey(val); count++; }
+      else if (key === "XAI_API_KEY" || key === "XAI_KEY") { setXaiKey(val); count++; }
+      else if (key === "DEEPSEEK_API_KEY" || key === "DEEPSEEK_KEY") { setDeepseekKey(val); count++; }
+      else if (key === "AIPET_NAME" || key === "PET_NAME") { setSetName(val); count++; }
+      else if (key === "BUDDY_IP") { setBuddyIpInput(val); count++; }
+    });
+
+    setUploadStatus(`Imported ${count} fields!`);
+    setUploadStatusClass('text-emerald-400 font-bold font-mono');
+    audioSynth.playSuccessArpeggio();
+    store.addLog(`[NVS] Direct .env editor imported ${count} core settings!`, "success");
+    setShowEnvEditor(false);
+  };
+
   // Upload parser for .env key inputs
   const handleKeysFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -1464,22 +1514,15 @@ Instructions:
                   />
                 </div>
                 
-                {/* File Upload Parser */}
+                {/* Direct .env Editor */}
                 <div className="flex flex-col gap-2">
-                  <label className="text-xs uppercase tracking-widest font-mono text-cyan-400 font-bold">Upload Key Config (.env)</label>
+                  <label className="text-xs uppercase tracking-widest font-mono text-cyan-400 font-bold">Configure .env File</label>
                   <div className="flex items-center gap-3 h-full">
-                    <input
-                      type="file"
-                      id="modal-file-upload"
-                      accept=".env,application/json"
-                      className="hidden"
-                      onChange={handleKeysFileUpload}
-                    />
                     <button
-                      onClick={() => document.getElementById('modal-file-upload')?.click()}
+                      onClick={handleOpenEnvEditor}
                       className="btn-action flex-1 bg-cyan-600/20 border border-cyan-500/50 hover:bg-cyan-600/40 text-cyan-300 py-3 rounded-lg font-bold uppercase tracking-wider text-xs cursor-pointer"
                     >
-                      📂 Select .env File
+                      📝 Create .env file
                     </button>
                     <span className={`text-xs font-mono select-none ${uploadStatusClass}`}>{uploadStatus}</span>
                   </div>
@@ -1615,6 +1658,51 @@ Instructions:
       {/* ONBOARDING WIZARD MODAL */}
       {showWizard && (
         <OnboardingWizard onComplete={() => setShowWizard(false)} />
+      )}
+
+      {/* DIRECT .ENV TEXTAREA EDITOR MODAL */}
+      {showEnvEditor && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-2xl p-4 transition-all duration-300">
+          <div className="glassmorphic w-full max-w-2xl rounded-2xl p-8 border-l-4 border-l-[#00F2FE] border-t border-t-white/10 relative overflow-hidden animate-[slideUp_0.4s_cubic-bezier(0.4,0,0.2,1)_forwards]">
+            {/* Ambient glows */}
+            <div className="glow-spot glow-cyan absolute top-0 left-0"></div>
+            <div className="glow-spot glow-purple absolute bottom-0 right-0"></div>
+
+            <div className="z-10 flex flex-col gap-5 w-full relative">
+              <h2 className="text-xl font-black hud-title tracking-widest text-[#00F2FE] uppercase border-b border-slate-800 pb-2">
+                📝 Direct .env Key Editor
+              </h2>
+              <p className="text-xs text-slate-400 font-mono leading-relaxed">
+                Paste your configuration parameters or credentials below. All values matching keys like <code className="text-cyan-400 font-bold">GEMINI_API_KEY</code>, <code className="text-[#9B51E0] font-bold">AIPET_NAME</code>, etc. will be dynamically parsed and populated.
+              </p>
+
+              <textarea
+                value={envText}
+                onChange={(e) => setEnvText(e.target.value)}
+                className="w-full h-80 bg-black/75 border border-slate-800 rounded-xl p-4 font-mono text-xs text-emerald-400 leading-relaxed focus:border-cyan-500/50 outline-none resize-none"
+                placeholder={`# Paste your env values here...\nGEMINI_API_KEY=...\nOPENAI_API_KEY=...\nAIPET_NAME=GhostScout`}
+              />
+
+              <div className="flex gap-4">
+                <button
+                  onClick={() => {
+                    setShowEnvEditor(false);
+                    audioSynth.playBeep(350, 0.08);
+                  }}
+                  className="btn-action bg-slate-800/50 border border-slate-700 hover:bg-slate-700/60 text-slate-300 py-2.5 px-6 rounded-lg font-bold uppercase tracking-wider text-xs cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveEnvText}
+                  className="btn-action flex-1 bg-cyan-600/20 border border-cyan-500/50 hover:bg-cyan-600/40 text-cyan-300 py-2.5 rounded-lg font-bold uppercase tracking-wider text-xs cursor-pointer"
+                >
+                  💾 Save & Import Configuration
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
