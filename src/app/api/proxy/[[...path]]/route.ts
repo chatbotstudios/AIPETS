@@ -46,17 +46,29 @@ export async function POST(req: Request) {
     try {
       if (isGemini) {
         if (geminiKey) {
+          // Look for system message in forwarded messages
+          const systemMsg = messages.find((m: any) => m.role === 'system')?.content || '';
+          
+          const payload: any = {
+            contents: [{ parts: [{ text: prompt }] }]
+          };
+          if (systemMsg) {
+            payload.systemInstruction = {
+              parts: [{ text: systemMsg }]
+            };
+          }
+
           // Attempt using v1 endpoint first for better stability
           const url = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${geminiKey}`;
           const response = await fetch(url, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+            body: JSON.stringify(payload)
           });
           if (response.ok) {
             const resData = await response.json();
             responseText = resData.candidates?.[0]?.content?.parts?.[0]?.text || "No content.";
-            tokenEstimate = Math.ceil((prompt.length + responseText.length) / 4);
+            tokenEstimate = Math.ceil((prompt.length + responseText.length + systemMsg.length) / 4);
           } else {
             const errText = await response.text();
             throw new Error(`GCP Gemini API ${response.status}: ${errText}`);

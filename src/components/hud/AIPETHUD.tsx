@@ -294,6 +294,48 @@ export default function AIPETHUD() {
     const prompt = directPrompt.trim();
     setDirectPrompt('');
 
+    const currentPet = store.petState;
+    const healthPercent = currentPet?.hp ?? 100;
+    const currentRep = currentPet?.rep ?? 1.0;
+
+    // Construct detailed cybernetic system consciousness prompt
+    const petName = currentPet?.name || "GhostScout";
+    const petClass = currentPet?.currentClass || "Cyber-Egg";
+    const petLevel = currentPet?.level ?? 1;
+    const petXp = currentPet?.xp ?? 50;
+    const petHp = healthPercent;
+    const petRep = currentRep;
+    const battery = store.batteryPercent;
+    const hudState = store.hudState;
+    const tools = store.toolsTicker;
+    
+    const recentLogs = store.logs
+      .slice(-15)
+      .map((log: LogEntry) => `[${log.time}] ${log.message}`)
+      .join('\n');
+
+    const systemPrompt = `You are the cognitive consciousness engine of the AI PETS Cyber-Companion.
+Your name designation is "${petName}".
+
+Current Vitals & Diagnostics:
+- Level: ${petLevel}
+- Class/Tier: ${petClass}
+- XP Progress: ${petXp}
+- Energy HP: ${petHp}%
+- Swarm Trust REP: ${petRep.toFixed(3)}
+- Active Tools: ${tools}
+- HUD Visual State: ${hudState}
+- Simulated Hardware Battery: ${battery}%
+
+Recent Diagnostic Telemetry Logs:
+${recentLogs || "No telemetry packets stored in memory buffer."}
+
+Instructions:
+1. Answer the user's prompt as the actual cybernetic digital companion lifeform itself.
+2. Keep your answers brief, punchy, tech-oriented, and highly reactive to your status and logs.
+3. If they ask about your level, HP/energy, REP, active tools, battery, or logs, look at the telemetry details above and answer accurately based on them!
+4. Use cybernetic or cute kaomojis (like (•‿‿•), (^‿‿^), (o ∞ o), or (✖ █ ✖) if errored) where appropriate.`;
+
     if (store.executionMode === 'gateway') {
       // Simulate/trigger Local Gateway proxy behavior
       store.setHUDState('thinking');
@@ -312,7 +354,10 @@ export default function AIPETHUD() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             model: store.activeProvider === 'gemini' ? 'gemini-1.5-flash' : 'gpt-4o-mini',
-            messages: [{ role: 'user', content: prompt }]
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: prompt }
+            ]
           })
         });
         if (!response.ok) {
@@ -367,7 +412,10 @@ export default function AIPETHUD() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }]
+            contents: [{ parts: [{ text: prompt }] }],
+            systemInstruction: {
+              parts: [{ text: systemPrompt }]
+            }
           })
         });
 
@@ -378,7 +426,7 @@ export default function AIPETHUD() {
 
         const resData = await response.json();
         responseText = resData.candidates?.[0]?.content?.parts?.[0]?.text || "No response received.";
-        tokenEstimate = Math.ceil(prompt.length / 4) + Math.ceil(responseText.length / 4);
+        tokenEstimate = Math.ceil(prompt.length / 4) + Math.ceil(responseText.length / 4) + Math.ceil(systemPrompt.length / 4);
       }
       else if (provider === "openai") {
         const url = "https://api.openai.com/v1/chat/completions";
@@ -390,7 +438,10 @@ export default function AIPETHUD() {
           },
           body: JSON.stringify({
             model: modelName,
-            messages: [{ role: "user", content: prompt }]
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: prompt }
+            ]
           })
         });
 
@@ -401,7 +452,7 @@ export default function AIPETHUD() {
 
         const resData = await response.json();
         responseText = resData.choices?.[0]?.message?.content || "No response received.";
-        tokenEstimate = resData.usage?.total_tokens || (Math.ceil(prompt.length / 4) + Math.ceil(responseText.length / 4));
+        tokenEstimate = resData.usage?.total_tokens || (Math.ceil(prompt.length / 4) + Math.ceil(responseText.length / 4) + Math.ceil(systemPrompt.length / 4));
       }
       else if (provider === "anthropic") {
         // Direct browser calls to Anthropic are blocked by CORS. Explain nicely!
@@ -417,7 +468,10 @@ export default function AIPETHUD() {
           },
           body: JSON.stringify({
             model: "grok-beta",
-            messages: [{ role: "user", content: prompt }]
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: prompt }
+            ]
           })
         });
 
@@ -428,7 +482,7 @@ export default function AIPETHUD() {
 
         const resData = await response.json();
         responseText = resData.choices?.[0]?.message?.content || "No response received.";
-        tokenEstimate = resData.usage?.total_tokens || (Math.ceil(prompt.length / 4) + Math.ceil(responseText.length / 4));
+        tokenEstimate = resData.usage?.total_tokens || (Math.ceil(prompt.length / 4) + Math.ceil(responseText.length / 4) + Math.ceil(systemPrompt.length / 4));
       }
       else if (provider === "deepseek") {
         const url = "https://api.deepseek.com/chat/completions";
@@ -440,7 +494,10 @@ export default function AIPETHUD() {
           },
           body: JSON.stringify({
             model: "deepseek-chat",
-            messages: [{ role: "user", content: prompt }]
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: prompt }
+            ]
           })
         });
 
@@ -451,7 +508,7 @@ export default function AIPETHUD() {
 
         const resData = await response.json();
         responseText = resData.choices?.[0]?.message?.content || "No response received.";
-        tokenEstimate = resData.usage?.total_tokens || (Math.ceil(prompt.length / 4) + Math.ceil(responseText.length / 4));
+        tokenEstimate = resData.usage?.total_tokens || (Math.ceil(prompt.length / 4) + Math.ceil(responseText.length / 4) + Math.ceil(systemPrompt.length / 4));
       }
 
       store.setHUDState('success');
