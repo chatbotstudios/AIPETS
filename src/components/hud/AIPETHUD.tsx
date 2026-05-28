@@ -294,6 +294,15 @@ export default function AIPETHUD() {
     const prompt = directPrompt.trim();
     setDirectPrompt('');
 
+    // Intercept /search query to use real Brave Search + Gemini synthesis!
+    if (prompt.toLowerCase().startsWith('/search')) {
+      const query = prompt.substring(7).trim();
+      if (query) {
+        triggerPlatformAction('brave_search', query);
+        return;
+      }
+    }
+
     const currentPet = store.petState;
     const healthPercent = currentPet?.hp ?? 100;
     const currentRep = currentPet?.rep ?? 1.0;
@@ -808,113 +817,139 @@ Instructions:
     }
   };
 
-  // DIAGNOSTIC REGISTRY ACTIONS
-  const triggerPassiveScan = () => {
-    audioSynth.playBeep(600, 0.08);
-    store.addLog("Initiating background spectrum scan on 2.4GHz...", 'warning');
-    store.setHUDState('connecting');
-
-    setTimeout(() => {
-      const ssids = ["HomeNet-5G", "XfinityWifi", "NetGear_Secure", "CoffeeShop_Free", "CLAW-HIVE-01"];
-      const foundCount = 1 + Math.floor(Math.random() * 4);
-
-      store.addLog(`Passive Scan Complete. Analyzed ${foundCount} ambient beacon sources:`, 'success');
-      for (let i = 0; i < foundCount; i++) {
-        const dbm = -30 - Math.floor(Math.random() * 60);
-        const ssid = ssids[i % ssids.length];
-        store.addLog(`   |-- SSID: ${ssid} | RSSI: ${dbm} dBm`, 'info');
-      }
-
-      store.addXP(45 + foundCount * 15);
-      audioSynth.playSuccessArpeggio();
-      triggerParticleBurst();
-      store.setHUDState('success');
+  // PLATFORM UPLINK REGISTRY ACTIONS
+  const triggerPlatformAction = async (action: 'telegram' | 'discord' | 'github' | 'brave_search', queryParam?: string) => {
+    audioSynth.playBeep(500, 0.1);
+    
+    if (action === 'brave_search') {
+      const searchPrompt = queryParam || prompt("Enter Brave web search query:");
+      if (!searchPrompt) return;
       
-      setTimeout(() => {
-        if (useAppState.getState().hudState === 'success') {
-          store.setHUDState('idle');
+      store.addLog(`[Brave Search] Querying cyberspace for: "${searchPrompt}"`, 'warning');
+      store.setHUDState('tool_calls');
+      
+      try {
+        const response = await fetch('/api/platform', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'brave_search', prompt: searchPrompt })
+        });
+        if (!response.ok) {
+          const errData = await response.json();
+          throw new Error(errData.error?.message || `HTTP ${response.status}`);
         }
-      }, 2500);
-    }, 3000);
-  };
-
-  const triggerIntelCapture = () => {
-    audioSynth.playBeep(450, 0.1);
-    store.addLog("Processing accumulated telemetry indices...", 'warning');
-    store.setHUDState('thinking');
-
-    setTimeout(() => {
-      store.addLog("Aggregating signal records into SQLite partition...", 'info');
-      store.addLog("Writing current PET_STATE.json parameters into local NVS Preferences...", 'info');
-
-      store.addXP(30);
-      audioSynth.playBeep(880, 0.15);
-      triggerParticleBurst();
-      store.setHUDState('success');
-
-      setTimeout(() => {
-        if (useAppState.getState().hudState === 'success') {
-          store.setHUDState('idle');
+        const data = await response.json();
+        
+        // Feed search results to Gemini dynamically in browser to synthesize!
+        store.setHUDState('thinking');
+        store.setAIResponse({
+          status: 'thinking',
+          model: 'Gemini 1.5 Flash',
+          text: `Synthesizing search results...`
+        });
+        
+        const apiKey = store.apiKeys.gemini;
+        if (!apiKey) {
+          throw new Error("Gemini API key is required to synthesize search results.");
         }
-      }, 2000);
-    }, 2500);
-  };
-
-  const triggerCooperativeSync = () => {
-    audioSynth.playBeep(800, 0.08);
-    store.addLog("Scanning mesh interface for active sibling nodes...", 'warning');
-    store.setHUDState('tool_calls');
-
-    setTimeout(() => {
-      const peers = store.swarmPeers;
-      if (peers.length === 0) {
-        store.addLog("[-] Zero sibling nodes detected in range. Broadcast vibe-key timed out.", 'warning');
+        
+        const snippets = data.snippets || "No matching snippets recovered.";
+        const synthesisPrompt = `I performed a Brave Web Search for "${searchPrompt}". Here are the top matches from cyberspace:\n\n${snippets}\n\nPlease synthesize a concise, high-tech companion response answering the search query based on these matches. Keep it brief and characterful.`;
+        
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+        const genResponse = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: synthesisPrompt }] }]
+          })
+        });
+        
+        if (!genResponse.ok) {
+          throw new Error(`Synthesis failed: HTTP ${genResponse.status}`);
+        }
+        
+        const genData = await genResponse.json();
+        const responseText = genData.candidates?.[0]?.content?.parts?.[0]?.text || "No summary available.";
+        
+        store.setHUDState('success');
+        store.setAIResponse({
+          status: 'success',
+          model: 'Gemini 1.5 Flash',
+          text: responseText,
+          tokens: 380,
+          xpGained: 65
+        });
+        
+        store.addLog(`[Brave Search] Synthesized response complete.`, 'success');
+        store.addXP(65);
+        audioSynth.playSuccessArpeggio();
+        triggerParticleBurst();
+        
+        setTimeout(() => {
+          if (useAppState.getState().hudState === 'success') {
+            store.setHUDState('idle');
+          }
+        }, 6000);
+        
+      } catch (err: any) {
         store.setHUDState('error');
+        store.setAIResponse({
+          status: 'error',
+          model: 'Brave Search API',
+          text: err.message || 'Search execution failed.'
+        });
+        store.addLog(`[-] Brave Search Error: ${err.message}`, 'error');
         audioSynth.playErrorWarning();
         
         setTimeout(() => {
           if (useAppState.getState().hudState === 'error') {
             store.setHUDState('idle');
           }
-        }, 2000);
-      } else {
-        const peer = peers[Math.floor(Math.random() * peers.length)];
-        store.addLog(`[Mesh Sync] Est. Connection with peer [${peer.name}]!`, 'mesh');
-        store.addLog(`[Neural Sync] Synchronizing emotional index & BSSID indices...`, 'mesh');
-
-        store.addXP(150);
-        store.restoreHP(20);
-        
-        audioSynth.playSuccessArpeggio();
-        triggerParticleBurst();
-        store.setHUDState('success');
-
-        setTimeout(() => {
-          if (useAppState.getState().hudState === 'success') {
-            store.setHUDState('idle');
-          }
-        }, 2500);
+        }, 5000);
       }
-    }, 2000);
-  };
+      return;
+    }
 
-  const triggerDreamLoop = () => {
-    audioSynth.playBeep(350, 0.25);
-    store.addLog("Entering Boredom Dream Loop reflection phase...", 'warning');
-    store.setHUDState('thinking');
-    audioSynth.playSpaceyChime();
-
-    setTimeout(() => {
-      store.addLog("Processed synthetic attack simulation models during sleep state.", 'info');
-      store.addXP(80);
+    // For other platform actions (Telegram, Discord, GitHub)
+    const displayName = action === 'telegram' ? 'Telegram' : action === 'discord' ? 'Discord' : 'GitHub';
+    store.addLog(`[Uplink] Triggering live ${displayName} action...`, 'warning');
+    store.setHUDState('connecting');
+    
+    try {
+      const response = await fetch('/api/platform', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action })
+      });
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error?.message || `HTTP ${response.status}`);
+      }
+      
       store.setHUDState('success');
+      store.addLog(`[Uplink] Live ${displayName} action completed successfully!`, 'success');
+      store.addXP(40);
+      audioSynth.playSuccessArpeggio();
+      triggerParticleBurst();
       
       setTimeout(() => {
         if (useAppState.getState().hudState === 'success') {
           store.setHUDState('idle');
         }
-      }, 2000);
-    }, 3500);
+      }, 2500);
+      
+    } catch (err: any) {
+      store.setHUDState('error');
+      store.addLog(`[-] Uplink dispatch failure: ${err.message}`, 'error');
+      audioSynth.playErrorWarning();
+      
+      setTimeout(() => {
+        if (useAppState.getState().hudState === 'error') {
+          store.setHUDState('idle');
+        }
+      }, 2500);
+    }
   };
 
   const handleNapToggle = () => {
@@ -1233,43 +1268,43 @@ Instructions:
         {/* RIGHT COLUMN: ACTION PANELS & SWARM (5 Cols) */}
         <aside className="lg:col-span-5 flex flex-col gap-6 w-full">
           
-          {/* DIAGNOSTIC ACTION REGISTRY */}
+          {/* PLATFORM UPLINK REGISTRY */}
           <div className="glassmorphic rounded-2xl p-6 flex flex-col gap-4 border-t border-t-white/5">
             <h2 className="text-sm font-bold uppercase tracking-widest text-[#00F2FE] border-b border-slate-800 pb-2 font-orbitron">
-              🧬 Diagnostic Action Registry
+              🧬 Platform Uplink Registry
             </h2>
 
             <div className="grid grid-cols-2 gap-3">
               <button
-                onClick={triggerPassiveScan}
+                onClick={() => triggerPlatformAction('telegram')}
                 disabled={store.hudState !== 'idle'}
-                className="btn-action bg-cyan-600/10 hover:bg-cyan-600/30 border border-cyan-500/40 text-cyan-300 px-3 py-2.5 rounded-lg text-xs font-semibold uppercase tracking-wider text-center cursor-pointer disabled:opacity-40"
+                className="btn-action bg-sky-600/10 hover:bg-sky-600/30 border border-sky-500/40 text-sky-300 px-3 py-2.5 rounded-lg text-xs font-semibold uppercase tracking-wider text-center cursor-pointer disabled:opacity-40"
               >
-                📡 Passive Scan
+                💬 Telegram Uplink
               </button>
 
               <button
-                onClick={triggerIntelCapture}
+                onClick={() => triggerPlatformAction('discord')}
+                disabled={store.hudState !== 'idle'}
+                className="btn-action bg-indigo-600/10 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 px-3 py-2.5 rounded-lg text-xs font-semibold uppercase tracking-wider text-center cursor-pointer disabled:opacity-40"
+              >
+                🎮 Discord Uplink
+              </button>
+
+              <button
+                onClick={() => triggerPlatformAction('github')}
                 disabled={store.hudState !== 'idle'}
                 className="btn-action bg-purple-600/10 hover:bg-purple-600/30 border border-purple-500/40 text-purple-300 px-3 py-2.5 rounded-lg text-xs font-semibold uppercase tracking-wider text-center cursor-pointer disabled:opacity-40"
               >
-                ⚙️ Process Intel
+                🐙 GitHub Uplink
               </button>
 
               <button
-                onClick={triggerCooperativeSync}
+                onClick={() => triggerPlatformAction('brave_search')}
                 disabled={store.hudState !== 'idle'}
-                className="btn-action bg-emerald-600/10 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 px-3 py-2.5 rounded-lg text-xs font-semibold uppercase tracking-wider text-center cursor-pointer disabled:opacity-40"
+                className="btn-action bg-orange-600/10 hover:bg-orange-600/30 border border-orange-500/40 text-orange-300 px-3 py-2.5 rounded-lg text-xs font-semibold uppercase tracking-wider text-center cursor-pointer disabled:opacity-40"
               >
-                🤝 Neural Sync
-              </button>
-
-              <button
-                onClick={triggerDreamLoop}
-                disabled={store.hudState !== 'idle'}
-                className="btn-action bg-yellow-600/10 hover:bg-yellow-600/30 border border-yellow-500/40 text-yellow-300 px-3 py-2.5 rounded-lg text-xs font-semibold uppercase tracking-wider text-center cursor-pointer disabled:opacity-40"
-              >
-                💤 Dream Loop
+                🔍 Brave Search
               </button>
 
               <button
