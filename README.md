@@ -40,20 +40,48 @@
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start & Setup Instructions
 
 ```bash
-# Clone
+# Clone the repository
 git clone https://github.com/chatbotstudios/AIPETS.git
 cd AIPETS
 
-# Install
+# Install dependencies
 npm install
+```
 
-# Configure (optional — for physical buddy sync)
-echo "BUDDY_IP=192.168.1.13" > .env
+### ⚙️ Configuration (.env)
 
-# Run
+Create a `.env.local` or `.env` file in the project root to configure your AI Providers and Alert Notification Channels. All keys are optional but highly recommended to unlock the full potential of your AIPET.
+
+```env
+# --- 🔑 AI Provider API Keys ---
+GEMINI_API_KEY=your_gemini_api_key
+ANTHROPIC_API_KEY=your_anthropic_api_key
+DEEPSEEK_API_KEY=your_deepseek_api_key
+OPENAI_API_KEY=your_openai_api_key
+GROK_API_KEY=your_xai_api_key
+OPENROUTER_API_KEY=your_openrouter_api_key
+
+# --- 📢 Alert Notification Channels ---
+TELEGRAM_TOKEN=your_telegram_bot_token
+TELEGRAM_CHAT_ID=your_telegram_chat_id
+DISCORD_BOT_TOKEN=your_discord_bot_token
+DISCORD_CHANNEL_ID=your_discord_channel_id
+DISCORD_USER_ID=your_discord_user_id
+
+# --- 🕵️ Agent Resources ---
+AGENT_GITHUB_PAT=your_github_pat
+BRAVE_SEARCH_API=your_brave_search_api
+
+# --- 🔌 Physical Buddy Sync (Optional) ---
+BUDDY_IP=192.168.1.13
+```
+
+### 🏃 Run the Application
+
+```bash
 npm run dev
 ```
 
