@@ -175,6 +175,15 @@ export default function AIPETHUD() {
   const [githubPat, setGithubPat] = useState('');
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
+  // Helper to globally broadcast local browser actions to the Cyberspace mesh (/api/pulse)
+  const broadcastLocalPulse = (status: string, model: string, text: string, tokens?: number, tools?: string) => {
+    fetch('/api/pulse', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status, model, text, tokens, tools, source: 'direct' })
+    }).catch(e => console.warn("[Local Broadcast Error]:", e));
+  };
+
   const handleCopyLog = async (log: any, idx: number) => {
     try {
       const plainText = `[${log.time}] ${log.face} ${log.message}`;
@@ -529,6 +538,7 @@ Instructions:
       model: modelName,
       text: "Streaming synapse response directly from browser..."
     });
+    broadcastLocalPulse('thinking', modelName, "Streaming synapse response directly from browser...");
 
     store.addLog(`[Neural Sync] ┊ ⚙️ transmit   streaming synapse request to direct ${modelName}...`, 'mesh');
 
@@ -649,6 +659,7 @@ Instructions:
         tokens: tokenEstimate,
         xpGained: Math.max(15, Math.floor(tokenEstimate / 10))
       });
+      broadcastLocalPulse('success', modelName, responseText, tokenEstimate);
 
       store.addLog(`[Neural Core] ┊ 🧠 complete   100% complete payload response synced via ${modelName}.`, "success");
       audioSynth.playSuccessArpeggio();
@@ -672,6 +683,7 @@ Instructions:
         model: modelName,
         text: err.message || 'Direct sync execution failed.'
       });
+      broadcastLocalPulse('error', modelName, err.message || 'Direct sync execution failed.');
       store.addLog(`[Neural Failsafe] ┊ ✖ failed     neural sync execution failed: ${err.message}`, 'error');
       audioSynth.playErrorWarning();
 

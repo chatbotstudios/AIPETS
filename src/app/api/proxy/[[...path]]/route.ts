@@ -1,4 +1,4 @@
-import { sseBroker } from "@/lib/sse-broker";
+import { pulseStore } from "@/lib/pulse-store";
 
 export const dynamic = "force-dynamic";
 
@@ -14,17 +14,19 @@ export async function POST(req: Request) {
 
     console.log(`[Proxy] Intercepted completions request for: ${modelName}`);
 
-    // 1. Broadcast initial pulse to sseBroker
+    // 1. Broadcast initial pulse to pulseStore
     if (hasTools) {
       const toolNames = tools.map((t: any) => t?.function?.name || 'tool').join(', ');
-      sseBroker.broadcast("tool_calls", {
+      pulseStore.set({
+        status: "tool_calls",
         model: modelName,
         text: `Executing tools: ${toolNames}`,
         tools: toolNames,
         source: req.headers.get('x-aipet-source') || 'proxy'
       });
     } else {
-      sseBroker.broadcast("thinking", {
+      pulseStore.set({
+        status: "thinking",
         model: modelName,
         text: prompt.length > 60 ? prompt.substring(0, 57) + "..." : prompt,
         source: req.headers.get('x-aipet-source') || 'proxy'
@@ -192,11 +194,12 @@ export async function POST(req: Request) {
     }
 
     // 4. Broadcast "success" state to browser client
-    sseBroker.broadcast("success", {
+    pulseStore.set({
+      status: "success",
       model: modelName,
       text: responseText,
       tokens: tokenEstimate,
-      action: hasTools ? 'tool_call' : 'chat_complete',
+      tools: hasTools ? 'tool_call' : undefined,
       source: req.headers.get('x-aipet-source') || "cyberspace"
     });
 
@@ -227,7 +230,8 @@ export async function POST(req: Request) {
     console.error("[Proxy Fatal Exception]:", error);
     
     // Broadcast "error" state pulse
-    sseBroker.broadcast("error", {
+    pulseStore.set({
+      status: "error",
       model: modelName,
       text: error.message || "Cyberspace connection aborted."
     });

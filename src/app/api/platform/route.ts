@@ -1,4 +1,4 @@
-import { sseBroker } from "@/lib/sse-broker";
+import { pulseStore } from "@/lib/pulse-store";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +23,8 @@ export async function POST(req: Request) {
       if (!tgToken) throw new Error("TELEGRAM_BOT_TOKEN not configured in .env");
       
       // 1. Broadcast Connecting pulse
-      sseBroker.broadcast("connecting", {
+      pulseStore.set({
+        status: "connecting",
         model: "Telegram Bot",
         text: "Initiating telegram uplink ping..."
       });
@@ -44,7 +45,8 @@ export async function POST(req: Request) {
       }
 
       // 3. Broadcast Success pulse
-      sseBroker.broadcast("success", {
+      pulseStore.set({
+        status: "success",
         model: "Telegram Bot",
         text: "Telemetry ping dispatched successfully to Telegram!",
         tokens: 45
@@ -59,7 +61,8 @@ export async function POST(req: Request) {
       }
 
       // 1. Broadcast Connecting pulse
-      sseBroker.broadcast("connecting", {
+      pulseStore.set({
+        status: "connecting",
         model: "Discord Bot",
         text: "Initiating discord uplink ping..."
       });
@@ -82,7 +85,8 @@ export async function POST(req: Request) {
       }
 
       // 3. Broadcast Success pulse
-      sseBroker.broadcast("success", {
+      pulseStore.set({
+        status: "success",
         model: "Discord Bot",
         text: "Telemetry ping posted successfully to Discord channel!",
         tokens: 65
@@ -95,9 +99,11 @@ export async function POST(req: Request) {
       if (!githubPat) throw new Error("AGENT_GITHUB_PAT not configured in .env");
 
       // 1. Broadcast Tool Call pulse
-      sseBroker.broadcast("tool_calls", {
+      pulseStore.set({
+        status: "tool_calls",
         model: "GitHub Uplink",
-        tools: "github_pull_commits, check_version_history"
+        tools: "github_pull_commits, check_version_history",
+        text: "Querying GitHub API..."
       });
 
       // 2. Fetch recent commits from GitHub repo
@@ -119,7 +125,8 @@ export async function POST(req: Request) {
       const author = commits[0]?.commit?.author?.name || "Unknown";
 
       // 3. Broadcast Success pulse
-      sseBroker.broadcast("success", {
+      pulseStore.set({
+        status: "success",
         model: "GitHub Uplink",
         text: `Repository active! Latest Commit: "${latestMsg}" by ${author}`,
         tokens: 150
@@ -133,9 +140,11 @@ export async function POST(req: Request) {
       if (!prompt) throw new Error("Brave search requires a search query prompt.");
 
       // 1. Broadcast Tool Call pulse
-      sseBroker.broadcast("tool_calls", {
+      pulseStore.set({
+        status: "tool_calls",
         model: "Brave Search API",
-        tools: "brave_web_search"
+        tools: "brave_web_search",
+        text: `Querying brave search for: ${prompt}`
       });
 
       // 2. Query Brave Search API
@@ -161,7 +170,8 @@ export async function POST(req: Request) {
         .join("\n\n");
 
       // 3. Broadcast Success pulse with snippets summary
-      sseBroker.broadcast("success", {
+      pulseStore.set({
+        status: "success",
         model: "Brave Search API",
         text: snippets || "No results matched the search query.",
         tokens: 380
@@ -178,7 +188,8 @@ export async function POST(req: Request) {
     console.error("[Platform API Exception]:", error);
     
     // Broadcast Error pulse
-    sseBroker.broadcast("error", {
+    pulseStore.set({
+      status: "error",
       model: "Cyberspace Uplink Gateway",
       text: error.message || "Failed executing uplink action."
     });
