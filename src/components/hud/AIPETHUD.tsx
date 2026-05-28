@@ -366,7 +366,7 @@ Instructions:
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model: store.activeProvider === 'gemini' ? 'gemini-1.5-flash' : 'gpt-4o-mini',
+            model: store.activeProvider === 'gemini' ? 'gemini-flash-latest' : 'gpt-4o-mini',
             messages: [
               { role: 'system', content: systemPrompt },
               { role: 'user', content: prompt }
@@ -394,7 +394,7 @@ Instructions:
     let apiKey = store.apiKeys[provider];
     let modelName = "";
 
-    if (provider === "gemini") modelName = "gemini-1.5-flash";
+    if (provider === "gemini") modelName = "gemini-flash-latest";
     else if (provider === "openai") modelName = "gpt-4o-mini";
     else if (provider === "anthropic") modelName = "claude-3-5-sonnet";
     else if (provider === "xai") modelName = "grok-beta";
@@ -860,7 +860,7 @@ Instructions:
         const snippets = data.snippets || "No matching snippets recovered.";
         const synthesisPrompt = `I performed a Brave Web Search for "${searchPrompt}". Here are the top matches from cyberspace:\n\n${snippets}\n\nPlease synthesize a concise, high-tech companion response answering the search query based on these matches. Keep it brief and characterful.`;
         
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`;
         const genResponse = await fetch(url, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -1623,7 +1623,7 @@ Instructions:
                     onChange={(e: any) => setProvider(e.target.value)}
                     className="glass-input w-full px-3 py-2.5 rounded-lg text-xs bg-black"
                   >
-                    <option value="gemini">Google Gemini (gemini-1.5-flash)</option>
+                    <option value="gemini">Google Gemini (gemini-flash-latest)</option>
                     <option value="openai">OpenAI (gpt-4o-mini)</option>
                     <option value="anthropic">Anthropic Claude (claude-3-5-sonnet)</option>
                     <option value="xai">xAI Grok (grok-beta)</option>
