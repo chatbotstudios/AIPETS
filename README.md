@@ -1,36 +1,206 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🐾 AIPETS — AI Pet Swarm HUD
 
-## Getting Started
+> A cyberpunk Tamagotchi-style AI companion HUD that reacts in real-time to your AI agents via braille matrix animations, particle effects, and telemetry pulses.
 
-First, run the development server:
+![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)
+![License](https://img.shields.io/badge/license-MIT-green)
+
+---
+
+## ✨ Features
+
+### 🧬 Braille & Dot Matrix Animations
+- **5×8 procedural braille matrix** with 7 unique animation modes per state
+- **Wave**, **Random Neural Noise**, **Cascade Fill**, **Spiral**, **Rain**, **Breathe**, and **Static** patterns
+- Per-state color palettes with dual-tone neon text shadows
+- 60 FPS render loop using direct DOM refs (zero React re-render overhead)
+
+### ⚡ Real-Time Agent Telemetry
+- **SSE (Server-Sent Events)** for instant browser push from any AI agent
+- **Hermes Agent hook** — auto-pulses on every LLM response via Discord/Telegram
+- Source badges show which platform triggered the reaction (⚡ HERMES, 🎮 DISCORD, ✈️ TELEGRAM)
+- Per-state screen glow animations (cyan, purple, yellow, green, red)
+
+### 🎮 Tamagotchi Game Engine
+- XP, Leveling, HP decay/regen, Trust REP system
+- Class evolution tree: Cyber-Egg → Script Kiddie → Packet Sniffer → ...
+- Swarm mesh peer simulation (ESP-NOW style)
+- Diagnostic action registry (Passive Scan, Process Intel, Neural Sync, Dream Loop)
+
+### 🔌 Physical Buddy Sync
+- Auto-relay pulses to ESP32 AMOLED hardware companion
+- Configurable via `BUDDY_IP` environment variable
+- Real-time state mirroring between web HUD and physical device
+
+### 🧠 Multi-Provider Neural Core
+- Direct browser API calls to **Gemini**, **OpenAI**, **xAI Grok**, **DeepSeek**
+- Gateway proxy mode for **Anthropic Claude** and LiteLLM
+- Upload `.env` or JSON config files to bulk-import API keys
+
+---
+
+## 🚀 Quick Start
 
 ```bash
+# Clone
+git clone https://github.com/chatbotstudios/AIPETS.git
+cd AIPETS
+
+# Install
+npm install
+
+# Configure (optional — for physical buddy sync)
+echo "BUDDY_IP=192.168.1.13" > .env
+
+# Run
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) and complete the onboarding wizard.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📡 Telemetry API
 
-## Learn More
+### POST `/api/pulse`
 
-To learn more about Next.js, take a look at the following resources:
+Send a telemetry pulse to trigger HUD animations:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+curl -X POST http://localhost:3000/api/pulse \
+  -H "Content-Type: application/json" \
+  -d '{"status":"thinking","model":"Hermes Agent","text":"Processing...","source":"hermes"}'
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Field | Type | Values |
+|-------|------|--------|
+| `status` | string | `idle`, `connecting`, `thinking`, `tool_calls`, `success`, `error` |
+| `model` | string | Agent/model name displayed in HUD |
+| `text` | string | Response text or status message |
+| `source` | string | `hermes`, `discord`, `telegram`, `direct`, `cyberspace` |
+| `tokens` | number | Token count (triggers XP gain on success) |
 
-## Deploy on Vercel
+### GET `/api/sse`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+EventSource stream for real-time browser push:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```javascript
+const es = new EventSource('/api/sse');
+es.onmessage = (e) => console.log(JSON.parse(e.data));
+```
+
+---
+
+## 🏗 Architecture
+
+```
+┌─────────────────────────────────────┐
+│  Remote Agents (Hermes/Discord/TG)  │
+│  post_llm_call shell hook           │
+│  → curl POST /api/pulse             │
+└──────────────┬──────────────────────┘
+               │ via Tailscale / LAN
+               ▼
+┌─────────────────────────────────────┐
+│  AIPETS (Next.js :3000)            │
+│  /api/pulse → SSE Broker           │
+│  /api/sse  → Browser EventSource   │
+│  → Physical Buddy auto-relay       │
+└──────────────┬──────────────────────┘
+               │
+    ┌──────────┴──────────┐
+    ▼                     ▼
+ Browser HUD         ESP32 Buddy
+ (Braille Matrix)    (AMOLED Display)
+```
+
+---
+
+## 📂 Project Structure
+
+```
+src/
+├── app/
+│   ├── api/
+│   │   ├── pulse/route.ts      # Telemetry pulse ingestion
+│   │   ├── sse/route.ts        # SSE stream for browsers
+│   │   ├── buddy-pulse/route.ts # ESP32 physical relay
+│   │   └── proxy/route.ts      # LiteLLM gateway proxy
+│   ├── globals.css             # Design system + braille animations
+│   ├── layout.tsx              # Root layout
+│   └── page.tsx                # Main app entry
+├── components/
+│   └── hud/
+│       ├── AIPETHUD.tsx        # Main HUD component (1500+ lines)
+│       └── OnboardingWizard.tsx # First-run setup wizard
+└── lib/
+    ├── store.ts                # Zustand state management
+    ├── game-engine.ts          # XP/Level/Evolution engine
+    ├── audio-synth.ts          # Web Audio API synth
+    └── sse-broker.ts           # Server-side SSE broadcaster
+```
+
+---
+
+## 🔧 Hermes Agent Integration
+
+To connect a remote [Hermes Agent](https://github.com/chatbotstudios), add a shell hook:
+
+**1. Create the hook script:**
+```bash
+# ~/.hermes/agent-hooks/buddy-pulse.sh
+#!/usr/bin/env bash
+payload="$(cat -)"
+response=$(echo "$payload" | jq -r '.extra.response_text // "activity"' 2>/dev/null)
+BUDDY_URL="${BUDDY_URL:-http://<YOUR_MAC_IP>:3000/api/pulse}"
+curl -s -X POST "$BUDDY_URL" \
+  -H "Content-Type: application/json" \
+  -d "{\"status\": \"success\", \"model\": \"Hermes Agent\", \"text\": \"$(echo "$response" | head -c 200)\", \"source\": \"hermes\"}" \
+  --connect-timeout 3 >/dev/null 2>&1 &
+printf '{}\n'
+```
+
+**2. Register in `~/.hermes/config.yaml`:**
+```yaml
+hooks:
+  post_llm_call:
+    - command: ~/.hermes/agent-hooks/buddy-pulse.sh
+      timeout: 10
+hooks_auto_accept: true
+```
+
+**3. Restart the gateway:**
+```bash
+hermes gateway restart
+```
+
+---
+
+## 📋 Version History
+
+### v2.0.0 — Braille Matrix Overhaul (2026-05-28)
+- 🧬 **5-row × 8-column braille matrix** (up from 3×6)
+- 🎨 **7 procedural animation modes**: wave, random, cascade, spiral, rain, breathe, static
+- 🌈 **Per-state color glow animations** with dual-tone neon shadows
+- ⚡ **Pulse source badges** — shows ⚡ HERMES, 🎮 DISCORD, ✈️ TELEGRAM origin
+- 🔗 **Hermes shell hook integration** — auto-pulse on every LLM response
+- 📡 **Remote agent support** via Tailscale VPN mesh
+
+### v1.0.0 — Initial Release (2026-05-27)
+- 🐾 Tamagotchi-style AI companion HUD
+- 📊 XP/Level/HP/REP vital metrics with animated progress bars
+- 🎮 Diagnostic action registry (Passive Scan, Intel Capture, Neural Sync, Dream Loop)
+- 🌐 Swarm mesh peer simulation
+- 🧠 Multi-provider Neural Core (Gemini, OpenAI, Anthropic, xAI, DeepSeek)
+- 🔌 Physical ESP32 Buddy sync via `/api/buddy-pulse`
+- 📡 SSE telemetry proxy for real-time browser push
+- 🎵 Web Audio API sound effects (success arpeggio, error warning, spacey chime)
+- ⚙️ Settings modal with `.env` file upload parser
+- 🎨 Glassmorphic dark UI with CRT scanline overlay
+
+---
+
+## 📄 License
+
+MIT — Built by [ChatbotStudios](https://github.com/chatbotstudios)
