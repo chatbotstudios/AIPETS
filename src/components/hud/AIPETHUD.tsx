@@ -350,6 +350,7 @@ export default function AIPETHUD() {
       
       const xp = Math.max(15, Math.floor((data.tokens || 120) / 10));
       store.addXP(xp);
+      store.restoreHP(35);
 
       setTimeout(() => {
         if (useAppState.getState().hudState === 'success') {
@@ -624,6 +625,7 @@ Instructions:
       const gainedXp = Math.max(15, Math.floor(tokenEstimate / 10));
       setTimeout(() => {
         store.addXP(gainedXp);
+        store.restoreHP(35);
         setTimeout(() => {
           if (useAppState.getState().hudState === 'success') {
             store.setHUDState('idle');

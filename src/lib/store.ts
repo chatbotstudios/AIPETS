@@ -340,6 +340,11 @@ export const useAppState = create<AppState>((set, get) => ({
     
     const newState = GameEngine.restoreHP(petState, amount);
     set({ petState: newState });
+    
+    if (newState.hp >= 20 && get().hudState === 'error') {
+      get().setHUDState('idle');
+      get().addLog("System Status recovered. Companion metabolic vital parameters nominal.", "success");
+    }
     get().saveToLocalStorage();
   },
 
