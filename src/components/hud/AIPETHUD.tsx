@@ -206,13 +206,13 @@ export default function AIPETHUD() {
     if (typeof window === 'undefined') return;
     
     console.log("[Telemetry Mesh] Initializing EventSource SSE receiver...");
-    store.addLog("[Telemetry Mesh] Listening for cyberspace LLM proxy events via /api/sse", "mesh");
+    store.addLog("[Telemetry Mesh] ┊ 📡 listening  cyberspace LLM proxy events via /api/sse", "mesh");
     
     let eventSource = new EventSource('/api/sse');
 
     eventSource.onopen = () => {
       store.setEmitterActive(true);
-      store.addLog("[Telemetry Mesh] SSE telemetry downlink channel established.", "mesh");
+      store.addLog("[Telemetry Mesh] ┊ 📡 established sse downlink channel secured.", "mesh");
     };
 
     eventSource.onerror = (err) => {
@@ -249,7 +249,7 @@ export default function AIPETHUD() {
         model,
         text: "Analyzing cyberspace query stream..."
       });
-      store.addLog(`[Cyberspace Link] Pulse received from ${model}: "${text}"`, "mesh");
+      store.addLog(`[Cyberspace Link] ┊ 🌐 incoming   telemetry pulse received from ${model}: "${text}"`, "mesh");
       triggerParticleBurst();
     }
     else if (status === "success") {
@@ -261,7 +261,7 @@ export default function AIPETHUD() {
         xpGained: Math.max(15, Math.floor((data.tokens || 120) / 10))
       });
       
-      store.addLog(`[Cyberspace Success] Query completed via ${model}. Telemetry logged.`, "success");
+      store.addLog(`[Cyberspace Success] ┊ 🧠 complete   query completed via ${model}. Telemetry logged.`, "success");
       audioSynth.playSuccessArpeggio();
       triggerParticleBurst();
       
@@ -280,7 +280,7 @@ export default function AIPETHUD() {
         model,
         text
       });
-      store.addLog(`[-] Cyberspace Exception: ${text}`, "error");
+      store.addLog(`[Cyberspace Failsafe] ┊ ✖ error      exception caught: ${text}`, "error");
       audioSynth.playErrorWarning();
 
       setTimeout(() => {
@@ -358,7 +358,7 @@ Instructions:
         text: `Transmitting pulse request to gateway stream...`
       });
       
-      store.addLog(`[Neural Sync] Transmitted command to proxy: "${prompt}"`, 'mesh');
+      store.addLog(`[Neural Sync] ┊ ⚙️ transmit   prompt query to local proxy: "${prompt}"`, 'mesh');
       
       // Post to proxy API
       try {
@@ -383,7 +383,7 @@ Instructions:
           model: 'Local Telemetry Proxy',
           text: err.message || 'Gateway offline.'
         });
-        store.addLog(`[-] Gateway dispatch failure: ${err.message}`, 'error');
+        store.addLog(`[Neural Failsafe] ┊ ✖ failed     gateway dispatch failure: ${err.message}`, 'error');
         audioSynth.playErrorWarning();
       }
       return;
@@ -413,7 +413,7 @@ Instructions:
       text: "Streaming synapse response directly from browser..."
     });
 
-    store.addLog(`[Neural Sync] Streaming request to direct ${modelName}...`, 'mesh');
+    store.addLog(`[Neural Sync] ┊ ⚙️ transmit   streaming synapse request to direct ${modelName}...`, 'mesh');
 
     try {
       let responseText = "";
@@ -533,7 +533,7 @@ Instructions:
         xpGained: Math.max(15, Math.floor(tokenEstimate / 10))
       });
 
-      store.addLog(`[Neural Core] Success! Got 100% complete response payload from ${modelName}.`, "success");
+      store.addLog(`[Neural Core] ┊ 🧠 complete   100% complete payload response synced via ${modelName}.`, "success");
       audioSynth.playSuccessArpeggio();
       triggerParticleBurst();
 
@@ -554,7 +554,7 @@ Instructions:
         model: modelName,
         text: err.message || 'Direct sync execution failed.'
       });
-      store.addLog(`[-] Neural Failsafe Triggered: ${err.message}`, 'error');
+      store.addLog(`[Neural Failsafe] ┊ ✖ failed     neural sync execution failed: ${err.message}`, 'error');
       audioSynth.playErrorWarning();
 
       setTimeout(() => {
@@ -829,7 +829,7 @@ Instructions:
       const searchPrompt = queryParam || prompt("Enter Brave web search query:");
       if (!searchPrompt) return;
       
-      store.addLog(`[Brave Search] Querying cyberspace for: "${searchPrompt}"`, 'warning');
+      store.addLog(`[Brave Search] ┊ 🔎 search     querying Brave search engine for: "${searchPrompt}"`, 'warning');
       store.setHUDState('tool_calls');
       
       try {
@@ -885,7 +885,7 @@ Instructions:
           xpGained: 65
         });
         
-        store.addLog(`[Brave Search] Synthesized response complete.`, 'success');
+        store.addLog(`[Brave Search] ┊ 🧠 done       synthesized response payload complete.`, 'success');
         store.addXP(65);
         audioSynth.playSuccessArpeggio();
         triggerParticleBurst();
@@ -903,7 +903,7 @@ Instructions:
           model: 'Brave Search API',
           text: err.message || 'Search execution failed.'
         });
-        store.addLog(`[-] Brave Search Error: ${err.message}`, 'error');
+        store.addLog(`[Brave Search] ┊ ✖ failed     search execution exception: ${err.message}`, 'error');
         audioSynth.playErrorWarning();
         
         setTimeout(() => {
@@ -917,7 +917,7 @@ Instructions:
 
     // For other platform actions (Telegram, Discord, GitHub)
     const displayName = action === 'telegram' ? 'Telegram' : action === 'discord' ? 'Discord' : 'GitHub';
-    store.addLog(`[Uplink] Triggering live ${displayName} action...`, 'warning');
+    store.addLog(`[Uplink] ┊ 🔌 transmit   triggering live ${displayName} action...`, 'warning');
     store.setHUDState('connecting');
     
     try {
@@ -932,7 +932,7 @@ Instructions:
       }
       
       store.setHUDState('success');
-      store.addLog(`[Uplink] Live ${displayName} action completed successfully!`, 'success');
+      store.addLog(`[Uplink] ┊ 🔌 done       live ${displayName} action completed successfully!`, 'success');
       store.addXP(40);
       audioSynth.playSuccessArpeggio();
       triggerParticleBurst();
@@ -945,7 +945,7 @@ Instructions:
       
     } catch (err: any) {
       store.setHUDState('error');
-      store.addLog(`[-] Uplink dispatch failure: ${err.message}`, 'error');
+      store.addLog(`[Uplink Failsafe] ┊ ✖ failed     uplink dispatch failure: ${err.message}`, 'error');
       audioSynth.playErrorWarning();
       
       setTimeout(() => {
@@ -1002,7 +1002,7 @@ Instructions:
     store.setBuddyIp(buddyIp.trim());
     store.saveToLocalStorage();
     
-    store.addLog(`[SYS] Configuration saved. Name: ${setname || store.petState?.name} | Channel: ${execMode.toUpperCase()} | Provider: ${provider.toUpperCase()}`, "success");
+    store.addLog(`[SYS] ┊ ⚙️ save       NVS local storage configurations saved. Designation: ${setname || store.petState?.name}`, "success");
     audioSynth.playSuccessArpeggio();
     triggerParticleBurst();
     setShowSettings(false);
@@ -1052,7 +1052,7 @@ Instructions:
     setUploadStatus(`Imported ${count} fields!`);
     setUploadStatusClass('text-emerald-400 font-bold font-mono');
     audioSynth.playSuccessArpeggio();
-    store.addLog(`[NVS] Direct .env editor imported ${count} core settings!`, "success");
+    store.addLog(`[NVS] ┊ ✍️ write      synaptic editor imported ${count} core environment variables!`, "success");
     setShowEnvEditor(false);
   };
 
